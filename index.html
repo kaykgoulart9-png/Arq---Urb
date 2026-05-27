@@ -1,0 +1,470 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="BevStock - Sistema inteligente de controle de estoque de bebidas. Gerencie produtos, movimentações e relatórios.">
+    <title>BevStock — Controle Inteligente de Estoque de Bebidas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- ==================== SIDEBAR ==================== -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fa-solid fa-wine-bottle"></i>
+                <span class="logo-text">Bev<span class="accent">Stock</span></span>
+            </div>
+            <button class="sidebar-toggle" id="sidebar-toggle" title="Recolher menu">
+                <i class="fa-solid fa-angles-left"></i>
+            </button>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-item active" data-page="dashboard" id="nav-dashboard">
+                <i class="fa-solid fa-chart-pie"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="#" class="nav-item" data-page="products" id="nav-products">
+                <i class="fa-solid fa-boxes-stacked"></i>
+                <span>Produtos</span>
+            </a>
+            <a href="#" class="nav-item" data-page="movements" id="nav-movements">
+                <i class="fa-solid fa-arrow-right-arrow-left"></i>
+                <span>Movimentações</span>
+            </a>
+            <a href="#" class="nav-item" data-page="categories" id="nav-categories">
+                <i class="fa-solid fa-tags"></i>
+                <span>Categorias</span>
+            </a>
+            <a href="#" class="nav-item" data-page="reports" id="nav-reports">
+                <i class="fa-solid fa-chart-bar"></i>
+                <span>Relatórios</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="user-avatar"><i class="fa-solid fa-user-tie"></i></div>
+                <div class="user-details">
+                    <span class="user-name">Administrador</span>
+                    <span class="user-role">Gerente de Estoque</span>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ==================== MAIN CONTENT ==================== -->
+    <main class="main-content" id="main-content">
+
+        <!-- Top Bar -->
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <button class="mobile-menu-btn" id="mobile-menu-btn" title="Menu">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div class="breadcrumb">
+                    <i class="fa-solid fa-house breadcrumb-home"></i>
+                    <span class="breadcrumb-sep">/</span>
+                    <span class="breadcrumb-page" id="breadcrumb-page">Dashboard</span>
+                </div>
+            </div>
+            <div class="top-bar-right">
+                <div class="search-box">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="global-search" placeholder="Buscar produtos...">
+                </div>
+                <div class="top-bar-actions">
+                    <button class="action-btn notification-btn" id="notification-btn" title="Alertas de Estoque">
+                        <i class="fa-solid fa-bell"></i>
+                        <span class="notification-badge" id="notification-badge">0</span>
+                    </button>
+                    <div class="date-display">
+                        <i class="fa-regular fa-calendar"></i>
+                        <span id="current-date"></span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Notification Panel -->
+        <div class="notification-panel" id="notification-panel">
+            <div class="notification-header">
+                <h3><i class="fa-solid fa-triangle-exclamation"></i> Alertas de Estoque</h3>
+                <button class="btn-icon" id="close-notifications"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="notification-list" id="notification-list"></div>
+        </div>
+
+        <!-- Toast Container -->
+        <div class="toast-container" id="toast-container"></div>
+
+        <!-- ============ PAGE: DASHBOARD ============ -->
+        <section class="page active" id="page-dashboard">
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-icon" style="--kpi-color: #3b82f6"><i class="fa-solid fa-boxes-stacked"></i></div>
+                    <div class="kpi-info">
+                        <span class="kpi-label">Total de Produtos</span>
+                        <h2 class="kpi-value" id="kpi-total-products">0</h2>
+                    </div>
+                    <div class="kpi-sparkline blue"></div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon" style="--kpi-color: #10b981"><i class="fa-solid fa-coins"></i></div>
+                    <div class="kpi-info">
+                        <span class="kpi-label">Valor em Estoque</span>
+                        <h2 class="kpi-value" id="kpi-stock-value">R$ 0</h2>
+                    </div>
+                    <div class="kpi-sparkline green"></div>
+                </div>
+                <div class="kpi-card alert-card">
+                    <div class="kpi-icon" style="--kpi-color: #ef4444"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                    <div class="kpi-info">
+                        <span class="kpi-label">Estoque Baixo</span>
+                        <h2 class="kpi-value" id="kpi-low-stock">0</h2>
+                    </div>
+                    <div class="kpi-sparkline red"></div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon" style="--kpi-color: #f59e0b"><i class="fa-solid fa-arrow-right-arrow-left"></i></div>
+                    <div class="kpi-info">
+                        <span class="kpi-label">Movimentações Hoje</span>
+                        <h2 class="kpi-value" id="kpi-movements-today">0</h2>
+                    </div>
+                    <div class="kpi-sparkline amber"></div>
+                </div>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="card card-lg">
+                    <div class="card-header">
+                        <h3><i class="fa-solid fa-clock-rotate-left"></i> Movimentações Recentes</h3>
+                        <a href="#" class="card-link" data-goto="movements">Ver todas <i class="fa-solid fa-arrow-right"></i></a>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="data-table compact">
+                                <thead>
+                                    <tr>
+                                        <th>Produto</th>
+                                        <th>Tipo</th>
+                                        <th>Qtd</th>
+                                        <th>Data</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dashboard-movements-body">
+                                    <tr class="empty-row"><td colspan="4"><div class="empty-state-sm"><i class="fa-solid fa-inbox"></i> Nenhuma movimentação</div></td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fa-solid fa-chart-pie"></i> Por Categoria</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-bars" id="category-chart">
+                            <div class="chart-empty"><i class="fa-solid fa-chart-pie"></i><span>Cadastre produtos</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fa-solid fa-triangle-exclamation"></i> Alertas</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert-list" id="dashboard-alerts">
+                            <div class="alert-empty"><i class="fa-solid fa-circle-check"></i><span>Estoque adequado</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fa-solid fa-ranking-star"></i> Top 5 por Valor</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="top-products-list" id="top-products-list">
+                            <div class="chart-empty"><i class="fa-solid fa-ranking-star"></i><span>Cadastre produtos</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ PAGE: PRODUCTS ============ -->
+        <section class="page" id="page-products">
+            <div class="page-header">
+                <div class="page-header-left">
+                    <h2>Gerenciar Produtos</h2>
+                    <p class="page-subtitle">Cadastre, edite e controle suas bebidas</p>
+                </div>
+                <button class="btn btn-primary" id="btn-add-product">
+                    <i class="fa-solid fa-plus"></i> <span>Novo Produto</span>
+                </button>
+            </div>
+            <div class="filters-bar">
+                <div class="filter-search">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="product-search" placeholder="Buscar por nome ou marca...">
+                </div>
+                <select id="product-filter-category" class="filter-select">
+                    <option value="">Todas Categorias</option>
+                </select>
+                <select id="product-filter-stock" class="filter-select">
+                    <option value="">Todos Status</option>
+                    <option value="ok">Estoque OK</option>
+                    <option value="low">Estoque Baixo</option>
+                    <option value="critical">Crítico</option>
+                    <option value="empty">Sem Estoque</option>
+                </select>
+            </div>
+            <div class="card">
+                <div class="card-body no-padding">
+                    <div class="table-responsive">
+                        <table class="data-table products-table">
+                            <thead>
+                                <tr>
+                                    <th>Produto</th>
+                                    <th>Categoria</th>
+                                    <th>Compra</th>
+                                    <th>Venda</th>
+                                    <th>Estoque</th>
+                                    <th>Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="products-table-body">
+                                <tr class="empty-row"><td colspan="7"><div class="empty-state"><i class="fa-solid fa-boxes-stacked"></i><h3>Nenhum produto cadastrado</h3><p>Clique em "Novo Produto" para começar</p></div></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ PAGE: MOVEMENTS ============ -->
+        <section class="page" id="page-movements">
+            <div class="page-header">
+                <div class="page-header-left">
+                    <h2>Movimentações de Estoque</h2>
+                    <p class="page-subtitle">Registre entradas e saídas</p>
+                </div>
+                <div class="page-header-actions">
+                    <button class="btn btn-success" id="btn-new-entry">
+                        <i class="fa-solid fa-arrow-down"></i> <span>Entrada</span>
+                    </button>
+                    <button class="btn btn-danger" id="btn-new-exit">
+                        <i class="fa-solid fa-arrow-up"></i> <span>Saída</span>
+                    </button>
+                </div>
+            </div>
+            <div class="filters-bar">
+                <div class="filter-search">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="movement-search" placeholder="Buscar movimentação...">
+                </div>
+                <select id="movement-filter-type" class="filter-select">
+                    <option value="">Todos</option>
+                    <option value="entry">Entradas</option>
+                    <option value="exit">Saídas</option>
+                </select>
+                <input type="date" id="movement-date-start" class="filter-date" title="Data início">
+                <input type="date" id="movement-date-end" class="filter-date" title="Data fim">
+            </div>
+            <div class="card">
+                <div class="card-body no-padding">
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Data/Hora</th>
+                                    <th>Produto</th>
+                                    <th>Tipo</th>
+                                    <th>Qtd</th>
+                                    <th>Motivo</th>
+                                    <th>Obs</th>
+                                </tr>
+                            </thead>
+                            <tbody id="movements-table-body">
+                                <tr class="empty-row"><td colspan="6"><div class="empty-state"><i class="fa-solid fa-arrow-right-arrow-left"></i><h3>Nenhuma movimentação</h3><p>Registre entradas ou saídas</p></div></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ PAGE: CATEGORIES ============ -->
+        <section class="page" id="page-categories">
+            <div class="page-header">
+                <div class="page-header-left">
+                    <h2>Categorias de Bebidas</h2>
+                    <p class="page-subtitle">Organize seus produtos por tipo</p>
+                </div>
+                <button class="btn btn-primary" id="btn-add-category">
+                    <i class="fa-solid fa-plus"></i> <span>Nova Categoria</span>
+                </button>
+            </div>
+            <div class="categories-grid" id="categories-grid"></div>
+        </section>
+
+        <!-- ============ PAGE: REPORTS ============ -->
+        <section class="page" id="page-reports">
+            <div class="page-header">
+                <div class="page-header-left">
+                    <h2>Relatórios</h2>
+                    <p class="page-subtitle">Análise completa do estoque</p>
+                </div>
+                <button class="btn btn-secondary" id="btn-export-csv">
+                    <i class="fa-solid fa-file-csv"></i> <span>Exportar CSV</span>
+                </button>
+            </div>
+            <div class="reports-grid">
+                <div class="card report-card">
+                    <div class="card-header"><h3><i class="fa-solid fa-chart-bar"></i> Valor por Categoria</h3></div>
+                    <div class="card-body"><div class="horizontal-chart" id="report-value-chart"></div></div>
+                </div>
+                <div class="card report-card">
+                    <div class="card-header"><h3><i class="fa-solid fa-chart-line"></i> Movimentações (7 dias)</h3></div>
+                    <div class="card-body"><div class="week-chart" id="report-week-chart"></div></div>
+                </div>
+                <div class="card report-card full-width">
+                    <div class="card-header"><h3><i class="fa-solid fa-triangle-exclamation"></i> Relatório Estoque Baixo</h3></div>
+                    <div class="card-body no-padding">
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead><tr><th>Produto</th><th>Categoria</th><th>Atual</th><th>Mínimo</th><th>Status</th><th>Ação</th></tr></thead>
+                                <tbody id="report-low-stock-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="card report-card">
+                    <div class="card-header"><h3><i class="fa-solid fa-fire"></i> Mais Movimentados</h3></div>
+                    <div class="card-body"><div class="most-moved-list" id="report-most-moved"></div></div>
+                </div>
+                <div class="card report-card">
+                    <div class="card-header"><h3><i class="fa-solid fa-clipboard-list"></i> Resumo Geral</h3></div>
+                    <div class="card-body"><div class="summary-stats" id="report-summary-stats"></div></div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ==================== MODALS ==================== -->
+
+    <!-- Product Modal -->
+    <div class="modal-overlay" id="product-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="product-modal-title"><i class="fa-solid fa-wine-bottle"></i> Novo Produto</h3>
+                <button class="btn-icon modal-close-btn" data-modal="product-modal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="product-form" class="modal-form">
+                <input type="hidden" id="product-id">
+                <div class="form-row">
+                    <div class="form-group"><label for="product-name">Nome *</label><input type="text" id="product-name" required placeholder="Ex: Cerveja IPA Artesanal"></div>
+                    <div class="form-group"><label for="product-brand">Marca</label><input type="text" id="product-brand" placeholder="Ex: Brahma, Absolut"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label for="product-category">Categoria *</label><select id="product-category" required></select></div>
+                    <div class="form-group"><label for="product-volume">Volume *</label><input type="text" id="product-volume" required placeholder="Ex: 350ml, 1L"></div>
+                </div>
+                <div class="form-row three-cols">
+                    <div class="form-group"><label for="product-purchase-price">Preço Compra (R$) *</label><input type="number" id="product-purchase-price" required min="0" step="0.01" placeholder="0.00"></div>
+                    <div class="form-group"><label for="product-sale-price">Preço Venda (R$) *</label><input type="number" id="product-sale-price" required min="0" step="0.01" placeholder="0.00"></div>
+                    <div class="form-group"><label for="product-min-stock">Estoque Mín. *</label><input type="number" id="product-min-stock" required min="0" placeholder="5"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label for="product-quantity">Qtd Inicial</label><input type="number" id="product-quantity" min="0" placeholder="0" value="0"></div>
+                    <div class="form-group"><label for="product-supplier">Fornecedor</label><input type="text" id="product-supplier" placeholder="Nome do fornecedor"></div>
+                </div>                <div class="form-row">
+                    <div class="form-group"><label for="product-sku">SKU</label><input type="text" id="product-sku" placeholder="Ex: CERV-BRAHM-350-2024"></div>
+                    <div class="form-group"><label for="product-expiry-date">Data Validade</label><input type="date" id="product-expiry-date"></div>
+                </div>                <div class="form-group"><label for="product-description">Descrição</label><textarea id="product-description" rows="2" placeholder="Descrição do produto..."></textarea></div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary modal-cancel" data-modal="product-modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Movement Modal -->
+    <div class="modal-overlay" id="movement-modal">
+        <div class="modal">
+            <div class="modal-header" id="movement-modal-header">
+                <h3 id="movement-modal-title"><i class="fa-solid fa-arrow-down"></i> Nova Entrada</h3>
+                <button class="btn-icon modal-close-btn" data-modal="movement-modal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="movement-form" class="modal-form">
+                <input type="hidden" id="movement-type" value="entry">
+                <div class="form-group"><label for="movement-product">Produto *</label><select id="movement-product" required></select></div>
+                <div class="form-row">
+                    <div class="form-group"><label for="movement-quantity">Quantidade *</label><input type="number" id="movement-quantity" required min="1" placeholder="0"></div>
+                    <div class="form-group"><label for="movement-reason">Motivo *</label><select id="movement-reason" required></select></div>
+                </div>
+                <div class="form-group"><label for="movement-notes">Observações</label><textarea id="movement-notes" rows="2" placeholder="Notas adicionais..."></textarea></div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary modal-cancel" data-modal="movement-modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" id="submit-movement-btn"><i class="fa-solid fa-check"></i> Registrar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Category Modal -->
+    <div class="modal-overlay" id="category-modal">
+        <div class="modal modal-sm">
+            <div class="modal-header">
+                <h3 id="category-modal-title"><i class="fa-solid fa-tag"></i> Nova Categoria</h3>
+                <button class="btn-icon modal-close-btn" data-modal="category-modal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="category-form" class="modal-form">
+                <input type="hidden" id="category-id">
+                <div class="form-group"><label for="category-name">Nome *</label><input type="text" id="category-name" required placeholder="Ex: Cervejas Importadas"></div>
+                <div class="form-row">
+                    <div class="form-group"><label for="category-icon">Ícone (emoji)</label><input type="text" id="category-icon" placeholder="🍺" maxlength="4"></div>
+                    <div class="form-group"><label for="category-color">Cor</label><input type="color" id="category-color" value="#e8a33d"></div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary modal-cancel" data-modal="category-modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Confirm Delete Modal -->
+    <div class="modal-overlay" id="confirm-modal">
+        <div class="modal modal-sm">
+            <div class="modal-header danger">
+                <h3><i class="fa-solid fa-triangle-exclamation"></i> Confirmar Exclusão</h3>
+                <button class="btn-icon modal-close-btn" data-modal="confirm-modal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <p id="confirm-message">Tem certeza que deseja excluir este item?</p>
+                <p class="confirm-warning">Esta ação não pode ser desfeita.</p>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary modal-cancel" data-modal="confirm-modal">Cancelar</button>
+                <button class="btn btn-danger" id="confirm-delete-btn"><i class="fa-solid fa-trash"></i> Excluir</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
+

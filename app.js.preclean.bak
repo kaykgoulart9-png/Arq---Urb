@@ -1,0 +1,3234 @@
+﻿/* ========================================
+   BevStock - Application Core
+   Beverage Inventory Control System
+   ======================================== */
+
+// ============ DATA LAYER ============
+
+const STORAGE_KEYS = {
+    products: 'bevstock_products',
+    movements: 'bevstock_movements',
+    categories: 'bevstock_categories',
+};
+
+const DEFAULT_CATEGORIES = [
+    { id: 'cat-1', name: 'Cervejas', icon: 'ðŸº', color: '#f59e0b' },
+    { id: 'cat-2', name: 'Vinhos', icon: 'ðŸ·', color: '#ef4444' },
+    { id: 'cat-3', name: 'Destilados', icon: 'ðŸ¥ƒ', color: '#e8a33d' },
+    { id: 'cat-4', name: 'Refrigerantes', icon: 'ðŸ¥¤', color: '#3b82f6' },
+    { id: 'cat-5', name: 'Sucos', icon: 'ðŸ§ƒ', color: '#10b981' },
+    { id: 'cat-6', name: 'Ãguas', icon: 'ðŸ’§', color: '#06b6d4' },
+    { id: 'cat-7', name: 'EnergÃ©ticos', icon: 'âš¡', color: '#8b5cf6' },
+];
+
+const SAMPLE_PRODUCTS = [
+    { id: 'p1', name: 'Cerveja IPA Artesanal', brand: 'BrewDog', categoryId: 'cat-1', volume: '350ml', purchasePrice: 8.50, salePrice: 14.90, quantity: 48, minStock: 12, supplier: 'Distribuidora Hop', description: 'IPA encorpada com notas cÃ­tricas e amargor equilibrado.' },
+    { id: 'p2', name: 'Vinho Tinto Reserva', brand: 'Casillero del Diablo', categoryId: 'cat-2', volume: '750ml', purchasePrice: 32.00, salePrice: 59.90, quantity: 15, minStock: 5, supplier: 'Importadora Vinhos SA', description: 'Cabernet Sauvignon chileno com taninos macios.' },
+    { id: 'p3', name: 'Whisky 12 Anos', brand: 'Johnnie Walker', categoryId: 'cat-3', volume: '750ml', purchasePrice: 89.90, salePrice: 159.90, quantity: 8, minStock: 3, supplier: 'Diageo Brasil', description: 'Blend suave com notas de mel e baunilha.' },
+    { id: 'p4', name: 'Coca-Cola Lata', brand: 'Coca-Cola', categoryId: 'cat-4', volume: '350ml', purchasePrice: 2.50, salePrice: 5.00, quantity: 120, minStock: 24, supplier: 'Coca-Cola FEMSA', description: 'O refrigerante mais vendido do mundo.' },
+    { id: 'p5', name: 'Suco de Laranja Natural', brand: 'Natural One', categoryId: 'cat-5', volume: '900ml', purchasePrice: 9.80, salePrice: 16.90, quantity: 20, minStock: 8, supplier: 'Natural One Ltda', description: 'Suco integral sem adiÃ§Ã£o de aÃ§Ãºcar.' },
+    { id: 'p6', name: 'Ãgua Mineral Premium', brand: 'San Pellegrino', categoryId: 'cat-6', volume: '500ml', purchasePrice: 4.50, salePrice: 8.90, quantity: 60, minStock: 20, supplier: 'NestlÃ© Waters', description: 'Ãgua mineral com gÃ¡s, importada da ItÃ¡lia.' },
+    { id: 'p7', name: 'EnergÃ©tico Monster', brand: 'Monster Energy', categoryId: 'cat-7', volume: '473ml', purchasePrice: 6.90, salePrice: 11.90, quantity: 36, minStock: 10, supplier: 'Monster Beverage', description: 'Bebida energÃ©tica sabor original.' },
+    { id: 'p8', name: 'Cerveja Pilsen Premium', brand: 'Heineken', categoryId: 'cat-1', volume: '330ml', purchasePrice: 4.20, salePrice: 7.90, quantity: 72, minStock: 24, supplier: 'Heineken Brasil', description: 'Lager premium com lÃºpulo europeu.' },
+    { id: 'p9', name: 'Vinho RosÃ© Provence', brand: 'Miraval', categoryId: 'cat-2', volume: '750ml', purchasePrice: 65.00, salePrice: 119.90, quantity: 4, minStock: 3, supplier: 'Importadora Premium', description: 'RosÃ© elegante da regiÃ£o de Provence, FranÃ§a.' },
+    { id: 'p10', name: 'Gin London Dry', brand: 'Tanqueray', categoryId: 'cat-3', volume: '750ml', purchasePrice: 72.00, salePrice: 129.90, quantity: 10, minStock: 4, supplier: 'Diageo Brasil', description: 'Gin clÃ¡ssico com quatro botÃ¢nicos.' },
+    { id: 'p11', name: 'Vodka Premium', brand: 'Grey Goose', categoryId: 'cat-3', volume: '750ml', purchasePrice: 95.00, salePrice: 179.90, quantity: 6, minStock: 3, supplier: 'Bacardi Martini', description: 'Vodka francesa feita com trigo de Picardia.' },
+    { id: 'p12', name: 'Red Bull Energy', brand: 'Red Bull', categoryId: 'cat-7', volume: '250ml', purchasePrice: 5.90, salePrice: 9.90, quantity: 2, minStock: 15, supplier: 'Red Bull Brasil', description: 'Bebida energÃ©tica lÃ­der de mercado.' },
+    { id: 'p13', name: 'Cerveja Witbier', brand: 'Hoegaarden', categoryId: 'cat-1', volume: '330ml', purchasePrice: 6.50, salePrice: 12.90, quantity: 0, minStock: 12, supplier: 'AB InBev', description: 'Cerveja de trigo belga com coentro e casca de laranja.' },
+];
+
+const SAMPLE_MOVEMENTS = (() => {
+    const movements = [];
+    const now = new Date();
+    const reasons_entry = ['Compra de fornecedor', 'DevoluÃ§Ã£o de cliente', 'Ajuste de inventÃ¡rio', 'TransferÃªncia entre unidades'];
+    const reasons_exit = ['Venda', 'Quebra/Avaria', 'Vencimento', 'Consumo interno', 'Ajuste de inventÃ¡rio'];
+
+    const entries = [
+        { productId: 'p1', qty: 24, daysAgo: 6 },
+        { productId: 'p4', qty: 48, daysAgo: 5 },
+        { productId: 'p8', qty: 36, daysAgo: 4 },
+        { productId: 'p3', qty: 6, daysAgo: 3 },
+        { productId: 'p6', qty: 30, daysAgo: 2 },
+        { productId: 'p7', qty: 12, daysAgo: 1 },
+        { productId: 'p2', qty: 10, daysAgo: 0 },
+    ];
+
+    const exits = [
+        { productId: 'p1', qty: 6, daysAgo: 5 },
+        { productId: 'p4', qty: 12, daysAgo: 4 },
+        { productId: 'p8', qty: 8, daysAgo: 3 },
+        { productId: 'p12', qty: 10, daysAgo: 2, reason: 'Venda' },
+        { productId: 'p9', qty: 2, daysAgo: 1, reason: 'Venda' },
+        { productId: 'p13', qty: 5, daysAgo: 0, reason: 'Vencimento' },
+    ];
+
+    entries.forEach((entry, index) => {
+        const date = new Date(now);
+        date.setDate(date.getDate() - entry.daysAgo);
+        date.setHours(9 + index, Math.floor(Math.random() * 59), 0);
+        movements.push({
+            id: `mov-e${index}`,
+            productId: entry.productId,
+            type: 'entry',
+            quantity: entry.qty,
+            reason: reasons_entry[Math.floor(Math.random() * reasons_entry.length)],
+            notes: '',
+            date: date.toISOString(),
+        });
+    });
+
+    exits.forEach((exit, index) => {
+        const date = new Date(now);
+        date.setDate(date.getDate() - exit.daysAgo);
+        date.setHours(14 + index, Math.floor(Math.random() * 59), 0);
+        movements.push({
+            id: `mov-x${index}`,
+            productId: exit.productId,
+            type: 'exit',
+            quantity: exit.qty,
+            reason: exit.reason || reasons_exit[Math.floor(Math.random() * reasons_exit.length)],
+            notes: '',
+            date: date.toISOString(),
+        });
+    });
+
+    return movements.sort((a, b) => new Date(b.date) - new Date(a.date));
+})();
+
+// Storage helpers
+function executeDelete() {
+    if (!pendingDeleteId || !pendingDeleteType) return;
+
+    if (pendingDeleteType === 'product') {
+        const product = getProductById(pendingDeleteId);
+        const movementsCount = movements.filter(m => m.productId === pendingDeleteId).length;
+        if (movementsCount > 0) {
+            showToast(`Não é possível excluir "${product?.name}" — existem ${movementsCount} movimentação(ões) associada(s).`, 'error');
+            closeModal('confirm-modal');
+            pendingDeleteId = null;
+            pendingDeleteType = null;
+            return;
+        }
+function generateId() {
+    // Mais robusto: combina timestamp + duas partes aleatórias para evitar colisões
+    const timestamp = Date.now().toString(36);
+    const randomPart = Math.random().toString(36).substring(2, 8);
+    const microsPart = Math.floor(Math.random() * 1000000).toString(36);
+    return 'id-' + timestamp + '-' + randomPart + '-' + microsPart;
+}
+// Initialize data
+let categories = loadData(STORAGE_KEYS.categories, null);
+let products = loadData(STORAGE_KEYS.products, null);
+let movements = loadData(STORAGE_KEYS.movements, null);
+
+if (!categories) { categories = [...DEFAULT_CATEGORIES]; saveData(STORAGE_KEYS.categories, categories); }
+if (!products) { products = [...SAMPLE_PRODUCTS]; saveData(STORAGE_KEYS.products, products); }
+if (!movements) { movements = [...SAMPLE_MOVEMENTS]; saveData(STORAGE_KEYS.movements, movements); }
+
+
+// ============ UTILITIES ============
+
+function executeDelete() {
+    if (!pendingDeleteId || !pendingDeleteType) return;
+
+    if (pendingDeleteType === 'product') {
+        const product = getProductById(pendingDeleteId);
+        const movementsCount = movements.filter(m => m.productId === pendingDeleteId).length;
+        if (movementsCount > 0) {
+            showToast(`Não é possível excluir "${product?.name}" — existem ${movementsCount} movimentação(ões) associada(s).`, 'error');
+            closeModal('confirm-modal');
+            pendingDeleteId = null;
+            pendingDeleteType = null;
+            return;
+        }
+
+        products = products.filter(p => p.id !== pendingDeleteId);
+        // Remover movimentos associados (opcional) - mantemos o comportamento original removendo também movimentos
+        movements = movements.filter(m => m.productId !== pendingDeleteId);
+        saveData(STORAGE_KEYS.products, products);
+        saveData(STORAGE_KEYS.movements, movements);
+        showToast(`Produto "${product?.name}" excluído`, 'warning');
+        renderProducts();
+    } else if (pendingDeleteType === 'category') {
+        const cat = getCategoryById(pendingDeleteId);
+        const hasProducts = products.some(p => p.categoryId === pendingDeleteId);
+        if (hasProducts) {
+            showToast('Remova todos os produtos desta categoria primeiro!', 'error');
+        } else {
+            categories = categories.filter(c => c.id !== pendingDeleteId);
+            saveData(STORAGE_KEYS.categories, categories);
+            showToast(`Categoria "${cat?.name}" excluída`, 'warning');
+            renderCategories();
+        }
+    }
+
+    pendingDeleteId = null;
+    pendingDeleteType = null;
+    closeModal('confirm-modal');
+}\r\n\r\nfunction formatCurrency(value) {
+    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value || 0);
+}\r\n\r\nfunction executeDelete() {
+    if (!pendingDeleteId || !pendingDeleteType) return;
+
+    if (pendingDeleteType === 'product') {
+        const product = getProductById(pendingDeleteId);
+        const movementsCount = movements.filter(m => m.productId === pendingDeleteId).length;
+        if (movementsCount > 0) {
+            showToast(`Não é possível excluir "${product?.name}" — existem ${movementsCount} movimentação(ões) associada(s).`, 'error');
+            closeModal('confirm-modal');
+            pendingDeleteId = null;
+            pendingDeleteType = null;
+            return;
+        }
+
+        products = products.filter(p => p.id !== pendingDeleteId);
+        // Remover movimentos associados (opcional) - mantemos o comportamento original removendo também movimentos
+        movements = movements.filter(m => m.productId !== pendingDeleteId);
+        saveData(STORAGE_KEYS.products, products);
+        saveData(STORAGE_KEYS.movements, movements);
+        showToast(`Produto "${product?.name}" excluído`, 'warning');
+        renderProducts();
+    } else if (pendingDeleteType === 'category') {
+        const cat = getCategoryById(pendingDeleteId);
+        const hasProducts = products.some(p => p.categoryId === pendingDeleteId);
+        if (hasProducts) {
+            showToast('Remova todos os produtos desta categoria primeiro!', 'error');
+        } else {
+            categories = categories.filter(c => c.id !== pendingDeleteId);
+            saveData(STORAGE_KEYS.categories, categories);
+            showToast(`Categoria "${cat?.name}" excluída`, 'warning');
+            renderCategories();
+        }
+    }
+
+    pendingDeleteId = null;
+    pendingDeleteType = null;
+    closeModal('confirm-modal');
+}\n\nfunction formatDate(isoString) {
+    return new Date(isoString).toLocaleDateString('pt-BR');
+}\r\n\r\nfunction executeDelete() {
+    if (!pendingDeleteId || !pendingDeleteType) return;
+
+    if (pendingDeleteType === 'product') {
+        const product = getProductById(pendingDeleteId);
+        const movementsCount = movements.filter(m => m.productId === pendingDeleteId).length;
+        if (movementsCount > 0) {
+            showToast(`Não é possível excluir "${product?.name}" — existem ${movementsCount} movimentação(ões) associada(s).`, 'error');
+            closeModal('confirm-modal');
+            pendingDeleteId = null;
+            pendingDeleteType = null;
+            return;
+        }
+
+        products = products.filter(p => p.id !== pendingDeleteId);
+        // Remover movimentos associados (opcional) - mantemos o comportamento original removendo também movimentos
+        movements = movements.filter(m => m.productId !== pendingDeleteId);
+        saveData(STORAGE_KEYS.products, products);
+        saveData(STORAGE_KEYS.movements, movements);
+        showToast(`Produto "${product?.name}" excluído`, 'warning');
+        renderProducts();
+    } else if (pendingDeleteType === 'category') {
+        const cat = getCategoryById(pendingDeleteId);
+        const hasProducts = products.some(p => p.categoryId === pendingDeleteId);
+        if (hasProducts) {
+            showToast('Remova todos os produtos desta categoria primeiro!', 'error');
+        } else {
+            categories = categories.filter(c => c.id !== pendingDeleteId);
+            saveData(STORAGE_KEYS.categories, categories);
+            showToast(`Categoria "${cat?.name}" excluída`, 'warning');
+            renderCategories();
+        }
+    }
+
+    pendingDeleteId = null;
+    pendingDeleteType = null;
+    closeModal('confirm-modal');
+}\n\nfunction formatDateTime(isoString) {
+    const d = new Date(isoString);
+    return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+}\r\n\r\nfunction executeDelete() {
+    if (!pendingDeleteId || !pendingDeleteType) return;
+
+    if (pendingDeleteType === 'product') {
+        const product = getProductById(pendingDeleteId);
+        const movementsCount = movements.filter(m => m.productId === pendingDeleteId).length;
+        if (movementsCount > 0) {
+            showToast(`Não é possível excluir "${product?.name}" — existem ${movementsCount} movimentação(ões) associada(s).`, 'error');
+            closeModal('confirm-modal');
+            pendingDeleteId = null;
+            pendingDeleteType = null;
+            return;
+        }
+
+        products = products.filter(p => p.id !== pendingDeleteId);
+        // Remover movimentos associados (opcional) - mantemos o comportamento original removendo também movimentos
+        movements = movements.filter(m => m.productId !== pendingDeleteId);
+        saveData(STORAGE_KEYS.products, products);
+        saveData(STORAGE_KEYS.movements, movements);
+        showToast(`Produto "${product?.name}" excluído`, 'warning');
+        renderProducts();
+    } else if (pendingDeleteType === 'category') {
+        const cat = getCategoryById(pendingDeleteId);
+        const hasProducts = products.some(p => p.categoryId === pendingDeleteId);
+        if (hasProducts) {
+            showToast('Remova todos os produtos desta categoria primeiro!', 'error');
+        } else {
+            categories = categories.filter(c => c.id !== pendingDeleteId);
+            saveData(STORAGE_KEYS.categories, categories);
+            showToast(`Categoria "${cat?.name}" excluída`, 'warning');
+            renderCategories();
+        }
+    }
+
+    pendingDeleteId = null;
+    pendingDeleteType = null;
+    closeModal('confirm-modal');
+}\n\nfunction getCategoryById(id) {
+    return categories.find(c => c.id === id);
+}\r\n\r\nfunction executeDelete() {
+    if (!pendingDeleteId || !pendingDeleteType) return;
+
+    if (pendingDeleteType === 'product') {
+        const product = getProductById(pendingDeleteId);
+        const movementsCount = movements.filter(m => m.productId === pendingDeleteId).length;
+        if (movementsCount > 0) {
+            showToast(`Não é possível excluir "${product?.name}" — existem ${movementsCount} movimentação(ões) associada(s).`, 'error');
+            closeModal('confirm-modal');
+            pendingDeleteId = null;
+            pendingDeleteType = null;
+            return;
+        }
+
+        products = products.filter(p => p.id !== pendingDeleteId);
+        // Remover movimentos associados (opcional) - mantemos o comportamento original removendo também movimentos
+        movements = movements.filter(m => m.productId !== pendingDeleteId);
+        saveData(STORAGE_KEYS.products, products);
+        saveData(STORAGE_KEYS.movements, movements);
+        showToast(`Produto "${product?.name}" excluído`, 'warning');
+        renderProducts();
+    } else if (pendingDeleteType === 'category') {
+        const cat = getCategoryById(pendingDeleteId);
+        const hasProducts = products.some(p => p.categoryId === pendingDeleteId);
+        if (hasProducts) {
+            showToast('Remova todos os produtos desta categoria primeiro!', 'error');
+        } else {
+            categories = categories.filter(c => c.id !== pendingDeleteId);
+            saveData(STORAGE_KEYS.categories, categories);
+            showToast(`Categoria "${cat?.name}" excluída`, 'warning');
+            renderCategories();
+        }
+    }
+
+    pendingDeleteId = null;
+    pendingDeleteType = null;
+    closeModal('confirm-modal');
+}\n\nfunction getProductById(id) {
+    return products.find(p => p.id === id);
+}\r\n\r\nfunction executeDelete() {
+    if (!pendingDeleteId || !pendingDeleteType) return;
+
+    if (pendingDeleteType === 'product') {
+        const product = getProductById(pendingDeleteId);
+        const movementsCount = movements.filter(m => m.productId === pendingDeleteId).length;
+        if (movementsCount > 0) {
+            showToast(`Não é possível excluir "${product?.name}" — existem ${movementsCount} movimentação(ões) associada(s).`, 'error');
+            closeModal('confirm-modal');
+            pendingDeleteId = null;
+            pendingDeleteType = null;
+            return;
+        }
+
+        products = products.filter(p => p.id !== pendingDeleteId);
+        // Remover movimentos associados (opcional) - mantemos o comportamento original removendo também movimentos
+        movements = movements.filter(m => m.productId !== pendingDeleteId);
+        saveData(STORAGE_KEYS.products, products);
+        saveData(STORAGE_KEYS.movements, movements);
+        showToast(`Produto "${product?.name}" excluído`, 'warning');
+        renderProducts();
+    } else if (pendingDeleteType === 'category') {
+        const cat = getCategoryById(pendingDeleteId);
+        const hasProducts = products.some(p => p.categoryId === pendingDeleteId);
+        if (hasProducts) {
+            showToast('Remova todos os produtos desta categoria primeiro!', 'error');
+        } else {
+            categories = categories.filter(c => c.id !== pendingDeleteId);
+            saveData(STORAGE_KEYS.categories, categories);
+            showToast(`Categoria "${cat?.name}" excluída`, 'warning');
+            renderCategories();
+        }
+    }
+
+    pendingDeleteId = null;
+    pendingDeleteType = null;
+    closeModal('confirm-modal');
+}\n\nfunction getStockStatus(product) {
+    if (product.quantity === 0) return { label: 'Sem Estoque', class: 'badge-empty', level: 'empty' };
+    if (product.quantity <= Math.floor(product.minStock * 0.3)) return { label: 'CrÃ­tico', class: 'badge-critical', level: 'critical' };
+    if (product.quantity <= product.minStock) return { label: 'Baixo', class: 'badge-low', level: 'low' };
+    return { label: 'OK', class: 'badge-ok', level: 'ok' };
+}\r\n\r\nfunction executeDelete() {
+    if (!pendingDeleteId || !pendingDeleteType) return;
+
+    if (pendingDeleteType === 'product') {
+        const product = getProductById(pendingDeleteId);
+        const movementsCount = movements.filter(m => m.productId === pendingDeleteId).length;
+        if (movementsCount > 0) {
+            showToast(`Não é possível excluir "${product?.name}" — existem ${movementsCount} movimentação(ões) associada(s).`, 'error');
+            closeModal('confirm-modal');
+            pendingDeleteId = null;
+            pendingDeleteType = null;
+            return;
+        }
+
+        products = products.filter(p => p.id !== pendingDeleteId);
+        // Remover movimentos associados (opcional) - mantemos o comportamento original removendo também movimentos
+        movements = movements.filter(m => m.productId !== pendingDeleteId);
+        saveData(STORAGE_KEYS.products, products);
+        saveData(STORAGE_KEYS.movements, movements);
+        showToast(`Produto "${product?.name}" excluído`, 'warning');
+        renderProducts();
+    } else if (pendingDeleteType === 'category') {
+        const cat = getCategoryById(pendingDeleteId);
+        const hasProducts = products.some(p => p.categoryId === pendingDeleteId);
+        if (hasProducts) {
+            showToast('Remova todos os produtos desta categoria primeiro!', 'error');
+        } else {
+            categories = categories.filter(c => c.id !== pendingDeleteId);
+            saveData(STORAGE_KEYS.categories, categories);
+            showToast(`Categoria "${cat?.name}" excluída`, 'warning');
+            renderCategories();
+        }
+    }
+
+    pendingDeleteId = null;
+    pendingDeleteType = null;
+    closeModal('confirm-modal');
+}\n\nfunction isToday(isoString) {
+    const d = new Date(isoString);
+    const now = new Date();
+    return d.toDateString() === now.toDateString();
+}
+
+
+// ============ TOAST SYSTEM ============
+
+function executeDelete() {
+    if (!pendingDeleteId || !pendingDeleteType) return;
+
+    if (pendingDeleteType === 'product') {
+        const product = getProductById(pendingDeleteId);
+        const movementsCount = movements.filter(m => m.productId === pendingDeleteId).length;
+        if (movementsCount > 0) {
+            showToast(`Não é possível excluir "${product?.name}" — existem ${movementsCount} movimentação(ões) associada(s).`, 'error');
+            closeModal('confirm-modal');
+            pendingDeleteId = null;
+            pendingDeleteType = null;
+            return;
+        }
+
+        products = products.filter(p => p.id !== pendingDeleteId);
+        // Remover movimentos associados (opcional) - mantemos o comportamento original removendo também movimentos
+        movements = movements.filter(m => m.productId !== pendingDeleteId);
+        saveData(STORAGE_KEYS.products, products);
+        saveData(STORAGE_KEYS.movements, movements);
+        showToast(`Produto "${product?.name}" excluído`, 'warning');
+        renderProducts();
+    } else if (pendingDeleteType === 'category') {
+        const cat = getCategoryById(pendingDeleteId);
+        const hasProducts = products.some(p => p.categoryId === pendingDeleteId);
+        if (hasProducts) {
+            showToast('Remova todos os produtos desta categoria primeiro!', 'error');
+        } else {
+            categories = categories.filter(c => c.id !== pendingDeleteId);
+            saveData(STORAGE_KEYS.categories, categories);
+            showToast(`Categoria "${cat?.name}" excluída`, 'warning');
+            renderCategories();
+        }
+    }
+
+    pendingDeleteId = null;
+    pendingDeleteType = null;
+    closeModal('confirm-modal');
+}\n\nfunction showToast(message, type = 'info') {
+    const container = document.getElementById('toast-container');
+    const icons = {
+        success: 'fa-solid fa-circle-check',
+        error: 'fa-solid fa-circle-xmark',
+        warning: 'fa-solid fa-triangle-exclamation',
+        info: 'fa-solid fa-circle-info',
+    };
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `<i class="${icons[type] || icons.info}"></i><span>${message}</span>`;
+    container.appendChild(toast);
+
+    setTimeout(() => {
+        toast.classList.add('removing');
+        setTimeout(() => toast.remove(), 300);
+    }, 3500);
+}
+
+
+// ============ MODAL SYSTEM ============
+
+function executeDelete() {
+    if (!pendingDeleteId || !pendingDeleteType) return;
+
+    if (pendingDeleteType === 'product') {
+        const product = getProductById(pendingDeleteId);
+        const movementsCount = movements.filter(m => m.productId === pendingDeleteId).length;
+        if (movementsCount > 0) {
+            showToast(`Não é possível excluir "${product?.name}" — existem ${movementsCount} movimentação(ões) associada(s).`, 'error');
+            closeModal('confirm-modal');
+            pendingDeleteId = null;
+            pendingDeleteType = null;
+            return;
+        }
+
+        products = products.filter(p => p.id !== pendingDeleteId);
+        // Remover movimentos associados (opcional) - mantemos o comportamento original removendo também movimentos
+        movements = movements.filter(m => m.productId !== pendingDeleteId);
+        saveData(STORAGE_KEYS.products, products);
+        saveData(STORAGE_KEYS.movements, movements);
+        showToast(`Produto "${product?.name}" excluído`, 'warning');
+        renderProducts();
+    } else if (pendingDeleteType === 'category') {
+        const cat = getCategoryById(pendingDeleteId);
+        const hasProducts = products.some(p => p.categoryId === pendingDeleteId);
+        if (hasProducts) {
+            showToast('Remova todos os produtos desta categoria primeiro!', 'error');
+        } else {
+            categories = categories.filter(c => c.id !== pendingDeleteId);
+            saveData(STORAGE_KEYS.categories, categories);
+            showToast(`Categoria "${cat?.name}" excluída`, 'warning');
+            renderCategories();
+        }
+    }
+
+    pendingDeleteId = null;
+    pendingDeleteType = null;
+    closeModal('confirm-modal');
+}\n\nfunction openModal(modalId) {
+    document.getElementById(modalId).classList.add('open');
+    document.body.style.overflow = 'hidden';
+}\r\n\r\nfunction executeDelete() {
+    if (!pendingDeleteId || !pendingDeleteType) return;
+
+    if (pendingDeleteType === 'product') {
+        const product = getProductById(pendingDeleteId);
+        const movementsCount = movements.filter(m => m.productId === pendingDeleteId).length;
+        if (movementsCount > 0) {
+            showToast(`Não é possível excluir "${product?.name}" — existem ${movementsCount} movimentação(ões) associada(s).`, 'error');
+            closeModal('confirm-modal');
+            pendingDeleteId = null;
+            pendingDeleteType = null;
+            return;
+        }
+
+        products = products.filter(p => p.id !== pendingDeleteId);
+        // Remover movimentos associados (opcional) - mantemos o comportamento original removendo também movimentos
+        movements = movements.filter(m => m.productId !== pendingDeleteId);
+        saveData(STORAGE_KEYS.products, products);
+        saveData(STORAGE_KEYS.movements, movements);
+        showToast(`Produto "${product?.name}" excluído`, 'warning');
+        renderProducts();
+    } else if (pendingDeleteType === 'category') {
+        const cat = getCategoryById(pendingDeleteId);
+        const hasProducts = products.some(p => p.categoryId === pendingDeleteId);
+        if (hasProducts) {
+            showToast('Remova todos os produtos desta categoria primeiro!', 'error');
+        } else {
+            categories = categories.filter(c => c.id !== pendingDeleteId);
+            saveData(STORAGE_KEYS.categories, categories);
+            showToast(`Categoria "${cat?.name}" excluída`, 'warning');
+            renderCategories();
+        }
+    }
+
+    pendingDeleteId = null;
+    pendingDeleteType = null;
+    closeModal('confirm-modal');
+}\n\nfunction closeModal(modalId) {
+    document.getElementById(modalId).classList.remove('open');
+    document.body.style.overflow = '';
+}\r\n\r\nfunction executeDelete() {
+    if (!pendingDeleteId || !pendingDeleteType) return;
+
+    if (pendingDeleteType === 'product') {
+        const product = getProductById(pendingDeleteId);
+        const movementsCount = movements.filter(m => m.productId === pendingDeleteId).length;
+        if (movementsCount > 0) {
+            showToast(`Não é possível excluir "${product?.name}" — existem ${movementsCount} movimentação(ões) associada(s).`, 'error');
+            closeModal('confirm-modal');
+            pendingDeleteId = null;
+            pendingDeleteType = null;
+            return;
+        }
+
+        products = products.filter(p => p.id !== pendingDeleteId);
+        // Remover movimentos associados (opcional) - mantemos o comportamento original removendo também movimentos
+        movements = movements.filter(m => m.productId !== pendingDeleteId);
+        saveData(STORAGE_KEYS.products, products);
+        saveData(STORAGE_KEYS.movements, movements);
+        showToast(`Produto "${product?.name}" excluído`, 'warning');
+        renderProducts();
+    } else if (pendingDeleteType === 'category') {
+        const cat = getCategoryById(pendingDeleteId);
+        const hasProducts = products.some(p => p.categoryId === pendingDeleteId);
+        if (hasProducts) {
+            showToast('Remova todos os produtos desta categoria primeiro!', 'error');
+        } else {
+            categories = categories.filter(c => c.id !== pendingDeleteId);
+            saveData(STORAGE_KEYS.categories, categories);
+            showToast(`Categoria "${cat?.name}" excluída`, 'warning');
+            renderCategories();
+        }
+    }
+
+    pendingDeleteId = null;
+    pendingDeleteType = null;
+    closeModal('confirm-modal');
+}\n\nfunction setupModalCloseHandlers() {
+    document.querySelectorAll('.modal-close-btn').forEach(btn => {
+        btn.addEventListener('click', () => closeModal(btn.dataset.modal));
+    });
+    document.querySelectorAll('.modal-cancel').forEach(btn => {
+        btn.addEventListener('click', () => closeModal(btn.dataset.modal));
+    });
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) closeModal(overlay.id);
+        });
+    });
+}
+
+
+// ============ NAVIGATION ============
+
+const PAGE_TITLES = {
+    dashboard: 'Dashboard',
+    products: 'Produtos',
+    movements: 'MovimentaÃ§Ãµes',
+    categories: 'Categorias',
+    reports: 'RelatÃ³rios',
+};
+
+function executeDelete() {
+    if (!pendingDeleteId || !pendingDeleteType) return;
+
+    if (pendingDeleteType === 'product') {
+        const product = getProductById(pendingDeleteId);
+        const movementsCount = movements.filter(m => m.productId === pendingDeleteId).length;
+        if (movementsCount > 0) {
+            showToast(`Não é possível excluir "${product?.name}" — existem ${movementsCount} movimentação(ões) associada(s).`, 'error');
+            closeModal('confirm-modal');
+            pendingDeleteId = null;
+            pendingDeleteType = null;
+            return;
+        }
+
+        products = products.filter(p => p.id !== pendingDeleteId);
+        // Remover movimentos associados (opcional) - mantemos o comportamento original removendo também movimentos
+        movements = movements.filter(m => m.productId !== pendingDeleteId);
+        saveData(STORAGE_KEYS.products, products);
+        saveData(STORAGE_KEYS.movements, movements);
+        showToast(`Produto "${product?.name}" excluído`, 'warning');
+        renderProducts();
+    } else if (pendingDeleteType === 'category') {
+        const cat = getCategoryById(pendingDeleteId);
+        const hasProducts = products.some(p => p.categoryId === pendingDeleteId);
+        if (hasProducts) {
+            showToast('Remova todos os produtos desta categoria primeiro!', 'error');
+        } else {
+            categories = categories.filter(c => c.id !== pendingDeleteId);
+            saveData(STORAGE_KEYS.categories, categories);
+            showToast(`Categoria "${cat?.name}" excluída`, 'warning');
+            renderCategories();
+        }
+    }
+
+    pendingDeleteId = null;
+    pendingDeleteType = null;
+    closeModal('confirm-modal');
+}\n\nfunction navigateTo(pageName) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+    const page = document.getElementById(`page-${pageName}`);
+    const nav = document.querySelector(`.nav-item[data-page="${pageName}"]`);
+
+    if (page) page.classList.add('active');
+    if (nav) nav.classList.add('active');
+
+    document.getElementById('breadcrumb-page').textContent = PAGE_TITLES[pageName] || pageName;
+
+    // Close mobile sidebar
+    document.getElementById('sidebar').classList.remove('mobile-open');
+    const overlay = document.querySelector('.mobile-overlay');
+    if (overlay) overlay.classList.remove('open');
+
+    // Refresh page data
+    switch (pageName) {
+        case 'dashboard': renderDashboard(); break;
+        case 'products': renderProducts(); break;
+        case 'movements': renderMovements(); break;
+        case 'categories': renderCategories(); break;
+        case 'reports': renderReports(); break;
+    }
+}\r\n\r\nfunction executeDelete() {
+    if (!pendingDeleteId || !pendingDeleteType) return;
+
+    if (pendingDeleteType === 'product') {
+        const product = getProductById(pendingDeleteId);
+        const movementsCount = movements.filter(m => m.productId === pendingDeleteId).length;
+        if (movementsCount > 0) {
+            showToast(`Não é possível excluir "${product?.name}" — existem ${movementsCount} movimentação(ões) associada(s).`, 'error');
+            closeModal('confirm-modal');
+            pendingDeleteId = null;
+            pendingDeleteType = null;
+            return;
+        }
+
+        products = products.filter(p => p.id !== pendingDeleteId);
+        // Remover movimentos associados (opcional) - mantemos o comportamento original removendo também movimentos
+        movements = movements.filter(m => m.productId !== pendingDeleteId);
+        saveData(STORAGE_KEYS.products, products);
+        saveData(STORAGE_KEYS.movements, movements);
+        showToast(`Produto "${product?.name}" excluído`, 'warning');
+        renderProducts();
+    } else if (pendingDeleteType === 'category') {
+        const cat = getCategoryById(pendingDeleteId);
+        const hasProducts = products.some(p => p.categoryId === pendingDeleteId);
+        if (hasProducts) {
+            showToast('Remova todos os produtos desta categoria primeiro!', 'error');
+        } else {
+            categories = categories.filter(c => c.id !== pendingDeleteId);
+            saveData(STORAGE_KEYS.categories, categories);
+            showToast(`Categoria "${cat?.name}" excluída`, 'warning');
+            renderCategories();
+        }
+    }
+
+    pendingDeleteId = null;
+    pendingDeleteType = null;
+    closeModal('confirm-modal');
+}\n\nfunction setupNavigation() {
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+            e.preventDefault();
+            navigateTo(item.dataset.page);
+        });
+    });
+
+    // Card links (goto)
+    document.querySelectorAll('[data-goto]').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            navigateTo(link.dataset.goto);
+        });
+    });
+}
+
+
+// ============ SIDEBAR ============
+
+function executeDelete() {
+    if (!pendingDeleteId || !pendingDeleteType) return;
+
+    if (pendingDeleteType === 'product') {
+        const product = getProductById(pendingDeleteId);
+        const movementsCount = movements.filter(m => m.productId === pendingDeleteId).length;
+        if (movementsCount > 0) {
+            showToast(`Não é possível excluir "${product?.name}" — existem ${movementsCount} movimentação(ões) associada(s).`, 'error');
+            closeModal('confirm-modal');
+            pendingDeleteId = null;
+            pendingDeleteType = null;
+            return;
+        }
+
+        products = products.filter(p => p.id !== pendingDeleteId);
+        // Remover movimentos associados (opcional) - mantemos o comportamento original removendo também movimentos
+        movements = movements.filter(m => m.productId !== pendingDeleteId);
+        saveData(STORAGE_KEYS.products, products);
+        saveData(STORAGE_KEYS.movements, movements);
+        showToast(`Produto "${product?.name}" excluído`, 'warning');
+        renderProducts();
+    } else if (pendingDeleteType === 'category') {
+        const cat = getCategoryById(pendingDeleteId);
+        const hasProducts = products.some(p => p.categoryId === pendingDeleteId);
+        if (hasProducts) {
+            showToast('Remova todos os produtos desta categoria primeiro!', 'error');
+        } else {
+            categories = categories.filter(c => c.id !== pendingDeleteId);
+            saveData(STORAGE_KEYS.categories, categories);
+            showToast(`Categoria "${cat?.name}" excluída`, 'warning');
+            renderCategories();
+        }
+    }
+
+    pendingDeleteId = null;
+    pendingDeleteType = null;
+    closeModal('confirm-modal');
+}\n\nfunction setupSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const toggle = document.getElementById('sidebar-toggle');
+    const mobileBtn = document.getElementById('mobile-menu-btn');
+
+    toggle.addEventListener('click', () => {
+        sidebar.classList.toggle('collapsed');
+        document.body.classList.toggle('sidebar-collapsed');
+    });
+
+    // Mobile
+    let overlay = document.createElement('div');
+    overlay.className = 'mobile-overlay';
+    document.body.appendChild(overlay);
+
+    mobileBtn.addEventListener('click', () => {
+        sidebar.classList.add('mobile-open');
+        overlay.classList.add('open');
+    });
+
+    overlay.addEventListener('click', () => {
+        sidebar.classList.remove('mobile-open');
+        overlay.classList.remove('open');
+    });
+}
+
+
+// ============ DASHBOARD ============
+
+function executeDelete() {
+    if (!pendingDeleteId || !pendingDeleteType) return;
+
+    if (pendingDeleteType === 'product') {
+        const product = getProductById(pendingDeleteId);
+        const movementsCount = movements.filter(m => m.productId === pendingDeleteId).length;
+        if (movementsCount > 0) {
+            showToast(`Não é possível excluir "${product?.name}" — existem ${movementsCount} movimentação(ões) associada(s).`, 'error');
+            closeModal('confirm-modal');
+            pendingDeleteId = null;
+            pendingDeleteType = null;
+            return;
+        }
+
+        products = products.filter(p => p.id !== pendingDeleteId);
+        // Remover movimentos associados (opcional) - mantemos o comportamento original removendo também movimentos
+        movements = movements.filter(m => m.productId !== pendingDeleteId);
+        saveData(STORAGE_KEYS.products, products);
+        saveData(STORAGE_KEYS.movements, movements);
+        showToast(`Produto "${product?.name}" excluído`, 'warning');
+        renderProducts();
+    } else if (pendingDeleteType === 'category') {
+        const cat = getCategoryById(pendingDeleteId);
+        const hasProducts = products.some(p => p.categoryId === pendingDeleteId);
+        if (hasProducts) {
+            showToast('Remova todos os produtos desta categoria primeiro!', 'error');
+        } else {
+            categories = categories.filter(c => c.id !== pendingDeleteId);
+            saveData(STORAGE_KEYS.categories, categories);
+            showToast(`Categoria "${cat?.name}" excluída`, 'warning');
+            renderCategories();
+        }
+    }
+
+    pendingDeleteId = null;
+    pendingDeleteType = null;
+    closeModal('confirm-modal');
+}\n\nfunction renderDashboard() {
+    renderKPIs();
+    renderDashboardMovements();
+    renderCategoryChart();
+    renderDashboardAlerts();
+    renderTopProducts();
+}\r\n\r\nfunction executeDelete() {
+    if (!pendingDeleteId || !pendingDeleteType) return;
+
+    if (pendingDeleteType === 'product') {
+        const product = getProductById(pendingDeleteId);
+        const movementsCount = movements.filter(m => m.productId === pendingDeleteId).length;
+        if (movementsCount > 0) {
+            showToast(`Não é possível excluir "${product?.name}" — existem ${movementsCount} movimentação(ões) associada(s).`, 'error');
+            closeModal('confirm-modal');
+            pendingDeleteId = null;
+            pendingDeleteType = null;
+            return;
+        }
+
+        products = products.filter(p => p.id !== pendingDeleteId);
+        // Remover movimentos associados (opcional) - mantemos o comportamento original removendo também movimentos
+        movements = movements.filter(m => m.productId !== pendingDeleteId);
+        saveData(STORAGE_KEYS.products, products);
+        saveData(STORAGE_KEYS.movements, movements);
+        showToast(`Produto "${product?.name}" excluído`, 'warning');
+        renderProducts();
+    } else if (pendingDeleteType === 'category') {
+        const cat = getCategoryById(pendingDeleteId);
+        const hasProducts = products.some(p => p.categoryId === pendingDeleteId);
+        if (hasProducts) {
+            showToast('Remova todos os produtos desta categoria primeiro!', 'error');
+        } else {
+            categories = categories.filter(c => c.id !== pendingDeleteId);
+            saveData(STORAGE_KEYS.categories, categories);
+            showToast(`Categoria "${cat?.name}" excluída`, 'warning');
+            renderCategories();
+        }
+    }
+
+    pendingDeleteId = null;
+    pendingDeleteType = null;
+    closeModal('confirm-modal');
+}\n\nfunction renderKPIs() {
+    const totalProducts = products.length;
+    const stockValue = products.reduce((sum, p) => sum + (p.salePrice * p.quantity), 0);
+    const lowStockCount = products.filter(p => {
+        const status = getStockStatus(p);
+        return status.level === 'low' || status.level === 'critical' || status.level === 'empty';
+    }).length;
+    const movementsToday = movements.filter(m => isToday(m.date)).length;
+
+    animateValue('kpi-total-products', totalProducts);
+    document.getElementById('kpi-stock-value').textContent = formatCurrency(stockValue);
+    animateValue('kpi-low-stock', lowStockCount);
+    animateValue('kpi-movements-today', movementsToday);
+
+    // Update notification badge
+    const badge = document.getElementById('notification-badge');
+    if (lowStockCount > 0) {
+        badge.textContent = lowStockCount;
+        badge.classList.remove('hidden');
+    } else {
+        badge.classList.add('hidden');
+    }
+}\r\n\r\nfunction executeDelete() {
+    if (!pendingDeleteId || !pendingDeleteType) return;
+
+    if (pendingDeleteType === 'product') {
+        const product = getProductById(pendingDeleteId);
+        const movementsCount = movements.filter(m => m.productId === pendingDeleteId).length;
+        if (movementsCount > 0) {
+            showToast(`Não é possível excluir "${product?.name}" — existem ${movementsCount} movimentação(ões) associada(s).`, 'error');
+            closeModal('confirm-modal');
+            pendingDeleteId = null;
+            pendingDeleteType = null;
+            return;
+        }
+
+        products = products.filter(p => p.id !== pendingDeleteId);
+        // Remover movimentos associados (opcional) - mantemos o comportamento original removendo também movimentos
+        movements = movements.filter(m => m.productId !== pendingDeleteId);
+        saveData(STORAGE_KEYS.products, products);
+        saveData(STORAGE_KEYS.movements, movements);
+        showToast(`Produto "${product?.name}" excluído`, 'warning');
+        renderProducts();
+    } else if (pendingDeleteType === 'category') {
+        const cat = getCategoryById(pendingDeleteId);
+        const hasProducts = products.some(p => p.categoryId === pendingDeleteId);
+        if (hasProducts) {
+            showToast('Remova todos os produtos desta categoria primeiro!', 'error');
+        } else {
+            categories = categories.filter(c => c.id !== pendingDeleteId);
+            saveData(STORAGE_KEYS.categories, categories);
+            showToast(`Categoria "${cat?.name}" excluída`, 'warning');
+            renderCategories();
+        }
+    }
+
+    pendingDeleteId = null;
+    pendingDeleteType = null;
+    closeModal('confirm-modal');
+}\n\nfunction animateValue(elementId, target) {
+    const el = document.getElementById(elementId);
+    const current = parseInt(el.textContent) || 0;
+    if (current === target) { el.textContent = target; return; }
+
+    const duration = 600;
+    const start = performance.now();
+
+    function executeDelete() {
+    if (!pendingDeleteId || !pendingDeleteType) return;
+
+    if (pendingDeleteType === 'product') {
+        const product = getProductById(pendingDeleteId);
+        const movementsCount = movements.filter(m => m.productId === pendingDeleteId).length;
+        if (movementsCount > 0) {
+            showToast(`Não é possível excluir "${product?.name}" — existem ${movementsCount} movimentação(ões) associada(s).`, 'error');
+            closeModal('confirm-modal');
+            pendingDeleteId = null;
+            pendingDeleteType = null;
+            return;
+        }
+
+        products = products.filter(p => p.id !== pendingDeleteId);
+        // Remover movimentos associados (opcional) - mantemos o comportamento original removendo também movimentos
+        movements = movements.filter(m => m.productId !== pendingDeleteId);
+        saveData(STORAGE_KEYS.products, products);
+        saveData(STORAGE_KEYS.movements, movements);
+        showToast(`Produto "${product?.name}" excluído`, 'warning');
+        renderProducts();
+    } else if (pendingDeleteType === 'category') {
+        const cat = getCategoryById(pendingDeleteId);
+        const hasProducts = products.some(p => p.categoryId === pendingDeleteId);
+        if (hasProducts) {
+            showToast('Remova todos os produtos desta categoria primeiro!', 'error');
+        } else {
+            categories = categories.filter(c => c.id !== pendingDeleteId);
+            saveData(STORAGE_KEYS.categories, categories);
+            showToast(`Categoria "${cat?.name}" excluída`, 'warning');
+            renderCategories();
+        }
+    }
+
+    pendingDeleteId = null;
+    pendingDeleteType = null;
+    closeModal('confirm-modal');
+}\n\nfunction update(now) {
+        const elapsed = now - start;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        el.textContent = Math.round(current + (target - current) * eased);
+        if (progress < 1) requestAnimationFrame(update);
+    }
+    requestAnimationFrame(update);
+}\r\n\r\nfunction executeDelete() {
+    if (!pendingDeleteId || !pendingDeleteType) return;
+
+    if (pendingDeleteType === 'product') {
+        const product = getProductById(pendingDeleteId);
+        const movementsCount = movements.filter(m => m.productId === pendingDeleteId).length;
+        if (movementsCount > 0) {
+            showToast(`Não é possível excluir "${product?.name}" — existem ${movementsCount} movimentação(ões) associada(s).`, 'error');
+            closeModal('confirm-modal');
+            pendingDeleteId = null;
+            pendingDeleteType = null;
+            return;
+        }
+
+        products = products.filter(p => p.id !== pendingDeleteId);
+        // Remover movimentos associados (opcional) - mantemos o comportamento original removendo também movimentos
+        movements = movements.filter(m => m.productId !== pendingDeleteId);
+        saveData(STORAGE_KEYS.products, products);
+        saveData(STORAGE_KEYS.movements, movements);
+        showToast(`Produto "${product?.name}" excluído`, 'warning');
+        renderProducts();
+    } else if (pendingDeleteType === 'category') {
+        const cat = getCategoryById(pendingDeleteId);
+        const hasProducts = products.some(p => p.categoryId === pendingDeleteId);
+        if (hasProducts) {
+            showToast('Remova todos os produtos desta categoria primeiro!', 'error');
+        } else {
+            categories = categories.filter(c => c.id !== pendingDeleteId);
+            saveData(STORAGE_KEYS.categories, categories);
+            showToast(`Categoria "${cat?.name}" excluída`, 'warning');
+            renderCategories();
+        }
+    }
+
+    pendingDeleteId = null;
+    pendingDeleteType = null;
+    closeModal('confirm-modal');
+}\n\nfunction renderDashboardMovements() {
+    const tbody = document.getElementById('dashboard-movements-body');
+    const recent = movements.slice(0, 8);
+
+    if (recent.length === 0) {
+        tbody.innerHTML = '<tr class="empty-row"><td colspan="4"><div class="empty-state-sm"><i class="fa-solid fa-inbox"></i> Nenhuma movimentaÃ§Ã£o</div></td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = recent.map(mov => {
+        const product = getProductById(mov.productId);
+        const productName = product ? product.name : 'Produto removido';
+        const typeClass = mov.type === 'entry' ? 'badge-entry' : 'badge-exit';
+        const typeLabel = mov.type === 'entry' ? 'â†“ Entrada' : 'â†‘ SaÃ­da';
+        const qtyPrefix = mov.type === 'entry' ? '+' : '-';
+
+        return `<tr>
+            <td><span class="fw-bold">${productName}</span></td>
+            <td><span class="badge ${typeClass}">${typeLabel}</span></td>
+            <td><span class="${mov.type === 'entry' ? 'text-success' : 'text-danger'} fw-bold">${qtyPrefix}${mov.quantity}</span></td>
+            <td class="text-muted">${formatDate(mov.date)}</td>
+        </tr>`;
+    }).join('');
+}\r\n\r\nfunction executeDelete() {
+    if (!pendingDeleteId || !pendingDeleteType) return;
+
+    if (pendingDeleteType === 'product') {
+        const product = getProductById(pendingDeleteId);
+        const movementsCount = movements.filter(m => m.productId === pendingDeleteId).length;
+        if (movementsCount > 0) {
+            showToast(`Não é possível excluir "${product?.name}" — existem ${movementsCount} movimentação(ões) associada(s).`, 'error');
+            closeModal('confirm-modal');
+            pendingDeleteId = null;
+            pendingDeleteType = null;
+            return;
+        }
+
+        products = products.filter(p => p.id !== pendingDeleteId);
+        // Remover movimentos associados (opcional) - mantemos o comportamento original removendo também movimentos
+        movements = movements.filter(m => m.productId !== pendingDeleteId);
+        saveData(STORAGE_KEYS.products, products);
+        saveData(STORAGE_KEYS.movements, movements);
+        showToast(`Produto "${product?.name}" excluído`, 'warning');
+        renderProducts();
+    } else if (pendingDeleteType === 'category') {
+        const cat = getCategoryById(pendingDeleteId);
+        const hasProducts = products.some(p => p.categoryId === pendingDeleteId);
+        if (hasProducts) {
+            showToast('Remova todos os produtos desta categoria primeiro!', 'error');
+        } else {
+            categories = categories.filter(c => c.id !== pendingDeleteId);
+            saveData(STORAGE_KEYS.categories, categories);
+            showToast(`Categoria "${cat?.name}" excluída`, 'warning');
+            renderCategories();
+        }
+    }
+
+    pendingDeleteId = null;
+    pendingDeleteType = null;
+    closeModal('confirm-modal');
+}\n\nfunction renderCategoryChart() {
+    const container = document.getElementById('category-chart');
+    const catCounts = {};
+
+    products.forEach(p => {
+        catCounts[p.categoryId] = (catCounts[p.categoryId] || 0) + p.quantity;
+    });
+
+    const catData = categories
+        .map(cat => ({ ...cat, count: catCounts[cat.id] || 0 }))
+        .filter(cat => cat.count > 0)
+        .sort((a, b) => b.count - a.count);
+
+    if (catData.length === 0) {
+        container.innerHTML = '<div class="chart-empty"><i class="fa-solid fa-chart-pie"></i><span>Cadastre produtos</span></div>';
+        return;
+    }
+
+    const maxCount = Math.max(...catData.map(c => c.count));
+
+    container.innerHTML = catData.map(cat => {
+        const pct = Math.max((cat.count / maxCount) * 100, 5);
+        return `<div class="chart-bar-item">
+            <span class="chart-bar-label">${cat.icon} ${cat.name}</span>
+            <div class="chart-bar-track">
+                <div class="chart-bar-fill" style="width:${pct}%; background:${cat.color};" data-value="${cat.count} un"></div>
+            </div>
+            <span class="chart-bar-count">${cat.count}</span>
+        </div>`;
+    }).join('');
+}\r\n\r\nfunction executeDelete() {
+    if (!pendingDeleteId || !pendingDeleteType) return;
+
+    if (pendingDeleteType === 'product') {
+        const product = getProductById(pendingDeleteId);
+        const movementsCount = movements.filter(m => m.productId === pendingDeleteId).length;
+        if (movementsCount > 0) {
+            showToast(`Não é possível excluir "${product?.name}" — existem ${movementsCount} movimentação(ões) associada(s).`, 'error');
+            closeModal('confirm-modal');
+            pendingDeleteId = null;
+            pendingDeleteType = null;
+            return;
+        }
+
+        products = products.filter(p => p.id !== pendingDeleteId);
+        // Remover movimentos associados (opcional) - mantemos o comportamento original removendo também movimentos
+        movements = movements.filter(m => m.productId !== pendingDeleteId);
+        saveData(STORAGE_KEYS.products, products);
+        saveData(STORAGE_KEYS.movements, movements);
+        showToast(`Produto "${product?.name}" excluído`, 'warning');
+        renderProducts();
+    } else if (pendingDeleteType === 'category') {
+        const cat = getCategoryById(pendingDeleteId);
+        const hasProducts = products.some(p => p.categoryId === pendingDeleteId);
+        if (hasProducts) {
+            showToast('Remova todos os produtos desta categoria primeiro!', 'error');
+        } else {
+            categories = categories.filter(c => c.id !== pendingDeleteId);
+            saveData(STORAGE_KEYS.categories, categories);
+            showToast(`Categoria "${cat?.name}" excluída`, 'warning');
+            renderCategories();
+        }
+    }
+
+    pendingDeleteId = null;
+    pendingDeleteType = null;
+    closeModal('confirm-modal');
+}\n\nfunction renderDashboardAlerts() {
+    const container = document.getElementById('dashboard-alerts');
+    const alertProducts = products.filter(p => {
+        const status = getStockStatus(p);
+        return status.level !== 'ok';
+    }).sort((a, b) => a.quantity - b.quantity);
+
+    if (alertProducts.length === 0) {
+        container.innerHTML = '<div class="alert-empty"><i class="fa-solid fa-circle-check"></i><span>Todos os produtos com estoque adequado</span></div>';
+        return;
+    }
+
+    container.innerHTML = alertProducts.slice(0, 6).map(p => {
+        const status = getStockStatus(p);
+        const isCritical = status.level === 'critical' || status.level === 'empty';
+        const iconClass = isCritical ? 'critical' : 'warning';
+        const alertClass = isCritical ? '' : 'warning';
+        const qtyClass = isCritical ? 'critical' : 'warning';
+
+        return `<div class="alert-item ${alertClass}">
+            <i class="fa-solid fa-${isCritical ? 'circle-exclamation' : 'triangle-exclamation'} alert-icon ${iconClass}"></i>
+            <span class="alert-text"><strong>${p.name}</strong> â€” ${status.label}</span>
+            <span class="alert-qty ${qtyClass}">${p.quantity} un</span>
+        </div>`;
+    }).join('');
+}\r\n\r\nfunction executeDelete() {
+    if (!pendingDeleteId || !pendingDeleteType) return;
+
+    if (pendingDeleteType === 'product') {
+        const product = getProductById(pendingDeleteId);
+        const movementsCount = movements.filter(m => m.productId === pendingDeleteId).length;
+        if (movementsCount > 0) {
+            showToast(`Não é possível excluir "${product?.name}" — existem ${movementsCount} movimentação(ões) associada(s).`, 'error');
+            closeModal('confirm-modal');
+            pendingDeleteId = null;
+            pendingDeleteType = null;
+            return;
+        }
+
+        products = products.filter(p => p.id !== pendingDeleteId);
+        // Remover movimentos associados (opcional) - mantemos o comportamento original removendo também movimentos
+        movements = movements.filter(m => m.productId !== pendingDeleteId);
+        saveData(STORAGE_KEYS.products, products);
+        saveData(STORAGE_KEYS.movements, movements);
+        showToast(`Produto "${product?.name}" excluído`, 'warning');
+        renderProducts();
+    } else if (pendingDeleteType === 'category') {
+        const cat = getCategoryById(pendingDeleteId);
+        const hasProducts = products.some(p => p.categoryId === pendingDeleteId);
+        if (hasProducts) {
+            showToast('Remova todos os produtos desta categoria primeiro!', 'error');
+        } else {
+            categories = categories.filter(c => c.id !== pendingDeleteId);
+            saveData(STORAGE_KEYS.categories, categories);
+            showToast(`Categoria "${cat?.name}" excluída`, 'warning');
+            renderCategories();
+        }
+    }
+
+    pendingDeleteId = null;
+    pendingDeleteType = null;
+    closeModal('confirm-modal');
+}\n\nfunction renderTopProducts() {
+    const container = document.getElementById('top-products-list');
+    const sorted = [...products]
+        .map(p => ({ ...p, totalValue: p.salePrice * p.quantity }))
+        .sort((a, b) => b.totalValue - a.totalValue)
+        .slice(0, 5);
+
+    if (sorted.length === 0 || sorted[0].totalValue === 0) {
+        container.innerHTML = '<div class="chart-empty"><i class="fa-solid fa-ranking-star"></i><span>Cadastre produtos</span></div>';
+        return;
+    }
+
+    const rankClasses = ['gold', 'silver', 'bronze', 'normal', 'normal'];
+
+    container.innerHTML = sorted.map((p, i) => {
+        const cat = getCategoryById(p.categoryId);
+        return `<div class="top-product-item">
+            <span class="top-rank ${rankClasses[i]}">${i + 1}</span>
+            <div class="top-product-info">
+                <div class="top-product-name">${p.name}</div>
+                <div class="top-product-cat">${cat ? cat.icon + ' ' + cat.name : ''}</div>
+            </div>
+            <span class="top-product-value">${formatCurrency(p.totalValue)}</span>
+        </div>`;
+    }).join('');
+}
+
+
+// ============ PRODUCTS ============
+
+function executeDelete() {
+    if (!pendingDeleteId || !pendingDeleteType) return;
+
+    if (pendingDeleteType === 'product') {
+        const product = getProductById(pendingDeleteId);
+        const movementsCount = movements.filter(m => m.productId === pendingDeleteId).length;
+        if (movementsCount > 0) {
+            showToast(`Não é possível excluir "${product?.name}" — existem ${movementsCount} movimentação(ões) associada(s).`, 'error');
+            closeModal('confirm-modal');
+            pendingDeleteId = null;
+            pendingDeleteType = null;
+            return;
+        }
+
+        products = products.filter(p => p.id !== pendingDeleteId);
+        // Remover movimentos associados (opcional) - mantemos o comportamento original removendo também movimentos
+        movements = movements.filter(m => m.productId !== pendingDeleteId);
+        saveData(STORAGE_KEYS.products, products);
+        saveData(STORAGE_KEYS.movements, movements);
+        showToast(`Produto "${product?.name}" excluído`, 'warning');
+        renderProducts();
+    } else if (pendingDeleteType === 'category') {
+        const cat = getCategoryById(pendingDeleteId);
+        const hasProducts = products.some(p => p.categoryId === pendingDeleteId);
+        if (hasProducts) {
+            showToast('Remova todos os produtos desta categoria primeiro!', 'error');
+        } else {
+            categories = categories.filter(c => c.id !== pendingDeleteId);
+            saveData(STORAGE_KEYS.categories, categories);
+            showToast(`Categoria "${cat?.name}" excluída`, 'warning');
+            renderCategories();
+        }
+    }
+
+    pendingDeleteId = null;
+    pendingDeleteType = null;
+    closeModal('confirm-modal');
+}\n\nfunction renderProducts() {
+    populateCategorySelects();
+    const tbody = document.getElementById('products-table-body');
+    let filtered = getFilteredProducts();
+
+    if (filtered.length === 0) {
+        tbody.innerHTML = '<tr class="empty-row"><td colspan="7"><div class="empty-state"><i class="fa-solid fa-boxes-stacked"></i><h3>Nenhum produto encontrado</h3><p>Ajuste os filtros ou cadastre novos produtos</p></div></td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = filtered.map(p => {
+        const cat = getCategoryById(p.categoryId);
+        const status = getStockStatus(p);
+        const catIcon = cat ? cat.icon : 'ðŸ“¦';
+        const catColor = cat ? cat.color : '#666';
+        const catName = cat ? cat.name : 'Sem categoria';
+
+        return `<tr>
+            <td>
+                <div class="product-cell">
+                    <div class="product-icon" style="background:${catColor}20; color:${catColor}">${catIcon}</div>
+                    <div class="product-info">
+                        <span class="product-name">${p.name}</span>
+                        <span class="product-brand">${p.brand || ''} ${p.volume ? 'â€¢ ' + p.volume : ''}</span>
+                    </div>
+                </div>
+            </td>
+            <td>${catName}</td>
+            <td>${formatCurrency(p.purchasePrice)}</td>
+            <td class="fw-bold">${formatCurrency(p.salePrice)}</td>
+            <td class="fw-bold">${p.quantity}</td>
+            <td><span class="badge ${status.class}">${status.label}</span></td>
+            <td>
+                <div class="table-actions">
+                    <button class="btn-icon-sm entry" title="Nova entrada" onclick="openQuickEntry('${p.id}')"><i class="fa-solid fa-arrow-down"></i></button>
+                    <button class="btn-icon-sm edit" title="Editar" onclick="editProduct('${p.id}')"><i class="fa-solid fa-pen"></i></button>
+                    <button class="btn-icon-sm delete" title="Excluir" onclick="confirmDeleteProduct('${p.id}')"><i class="fa-solid fa-trash"></i></button>
+                </div>
+            </td>
+        </tr>`;
+    }).join('');
+}\r\n\r\nfunction executeDelete() {
+    if (!pendingDeleteId || !pendingDeleteType) return;
+
+    if (pendingDeleteType === 'product') {
+        const product = getProductById(pendingDeleteId);
+        const movementsCount = movements.filter(m => m.productId === pendingDeleteId).length;
+        if (movementsCount > 0) {
+            showToast(`Não é possível excluir "${product?.name}" — existem ${movementsCount} movimentação(ões) associada(s).`, 'error');
+            closeModal('confirm-modal');
+            pendingDeleteId = null;
+            pendingDeleteType = null;
+            return;
+        }
+
+        products = products.filter(p => p.id !== pendingDeleteId);
+        // Remover movimentos associados (opcional) - mantemos o comportamento original removendo também movimentos
+        movements = movements.filter(m => m.productId !== pendingDeleteId);
+        saveData(STORAGE_KEYS.products, products);
+        saveData(STORAGE_KEYS.movements, movements);
+        showToast(`Produto "${product?.name}" excluído`, 'warning');
+        renderProducts();
+    } else if (pendingDeleteType === 'category') {
+        const cat = getCategoryById(pendingDeleteId);
+        const hasProducts = products.some(p => p.categoryId === pendingDeleteId);
+        if (hasProducts) {
+            showToast('Remova todos os produtos desta categoria primeiro!', 'error');
+        } else {
+            categories = categories.filter(c => c.id !== pendingDeleteId);
+            saveData(STORAGE_KEYS.categories, categories);
+            showToast(`Categoria "${cat?.name}" excluída`, 'warning');
+            renderCategories();
+        }
+    }
+
+    pendingDeleteId = null;
+    pendingDeleteType = null;
+    closeModal('confirm-modal');
+}\n\nfunction getFilteredProducts() {
+    const search = document.getElementById('product-search').value.toLowerCase().trim();
+    const catFilter = document.getElementById('product-filter-category').value;
+    const stockFilter = document.getElementById('product-filter-stock').value;
+
+    return products.filter(p => {
+        if (search && !p.name.toLowerCase().includes(search) && !(p.brand || '').toLowerCase().includes(search)) return false;
+        if (catFilter && p.categoryId !== catFilter) return false;
+        if (stockFilter) {
+            const status = getStockStatus(p);
+            if (status.level !== stockFilter) return false;
+        }
+        return true;
+    });
+}\r\n\r\nfunction executeDelete() {
+    if (!pendingDeleteId || !pendingDeleteType) return;
+
+    if (pendingDeleteType === 'product') {
+        const product = getProductById(pendingDeleteId);
+        const movementsCount = movements.filter(m => m.productId === pendingDeleteId).length;
+        if (movementsCount > 0) {
+            showToast(`Não é possível excluir "${product?.name}" — existem ${movementsCount} movimentação(ões) associada(s).`, 'error');
+            closeModal('confirm-modal');
+            pendingDeleteId = null;
+            pendingDeleteType = null;
+            return;
+        }
+
+        products = products.filter(p => p.id !== pendingDeleteId);
+        // Remover movimentos associados (opcional) - mantemos o comportamento original removendo também movimentos
+        movements = movements.filter(m => m.productId !== pendingDeleteId);
+        saveData(STORAGE_KEYS.products, products);
+        saveData(STORAGE_KEYS.movements, movements);
+        showToast(`Produto "${product?.name}" excluído`, 'warning');
+        renderProducts();
+    } else if (pendingDeleteType === 'category') {
+        const cat = getCategoryById(pendingDeleteId);
+        const hasProducts = products.some(p => p.categoryId === pendingDeleteId);
+        if (hasProducts) {
+            showToast('Remova todos os produtos desta categoria primeiro!', 'error');
+        } else {
+            categories = categories.filter(c => c.id !== pendingDeleteId);
+            saveData(STORAGE_KEYS.categories, categories);
+            showToast(`Categoria "${cat?.name}" excluída`, 'warning');
+            renderCategories();
+        }
+    }
+
+    pendingDeleteId = null;
+    pendingDeleteType = null;
+    closeModal('confirm-modal');
+}\n\nfunction populateCategorySelects() {
+    const selects = [
+        document.getElementById('product-filter-category'),
+        document.getElementById('product-category'),
+    ];
+
+    selects.forEach(select => {
+        if (!select) return;
+        const currentVal = select.value;
+        const isFilter = select.id.includes('filter');
+
+        select.innerHTML = isFilter ? '<option value="">Todas Categorias</option>' : '';
+        categories.forEach(cat => {
+            select.innerHTML += `<option value="${cat.id}">${cat.icon} ${cat.name}</option>`;
+        });
+        if (currentVal) select.value = currentVal;
+    });
+}\r\n\r\nfunction executeDelete() {
+    if (!pendingDeleteId || !pendingDeleteType) return;
+
+    if (pendingDeleteType === 'product') {
+        const product = getProductById(pendingDeleteId);
+        const movementsCount = movements.filter(m => m.productId === pendingDeleteId).length;
+        if (movementsCount > 0) {
+            showToast(`Não é possível excluir "${product?.name}" — existem ${movementsCount} movimentação(ões) associada(s).`, 'error');
+            closeModal('confirm-modal');
+            pendingDeleteId = null;
+            pendingDeleteType = null;
+            return;
+        }
+
+        products = products.filter(p => p.id !== pendingDeleteId);
+        // Remover movimentos associados (opcional) - mantemos o comportamento original removendo também movimentos
+        movements = movements.filter(m => m.productId !== pendingDeleteId);
+        saveData(STORAGE_KEYS.products, products);
+        saveData(STORAGE_KEYS.movements, movements);
+        showToast(`Produto "${product?.name}" excluído`, 'warning');
+        renderProducts();
+    } else if (pendingDeleteType === 'category') {
+        const cat = getCategoryById(pendingDeleteId);
+        const hasProducts = products.some(p => p.categoryId === pendingDeleteId);
+        if (hasProducts) {
+            showToast('Remova todos os produtos desta categoria primeiro!', 'error');
+        } else {
+            categories = categories.filter(c => c.id !== pendingDeleteId);
+            saveData(STORAGE_KEYS.categories, categories);
+            showToast(`Categoria "${cat?.name}" excluída`, 'warning');
+            renderCategories();
+        }
+    }
+
+    pendingDeleteId = null;
+    pendingDeleteType = null;
+    closeModal('confirm-modal');
+}\n\nfunction openProductModal(product = null) {
+    const form = document.getElementById('product-form');
+    const title = document.getElementById('product-modal-title');
+
+    form.reset();
+    document.getElementById('product-id').value = '';
+    document.getElementById('product-quantity').value = '0';
+
+    populateCategorySelects();
+
+    if (product) {
+        title.innerHTML = '<i class="fa-solid fa-pen"></i> Editar Produto';
+        document.getElementById('product-id').value = product.id;
+        document.getElementById('product-name').value = product.name;
+        document.getElementById('product-brand').value = product.brand || '';
+        document.getElementById('product-category').value = product.categoryId;
+        document.getElementById('product-volume').value = product.volume;
+        document.getElementById('product-purchase-price').value = product.purchasePrice;
+        document.getElementById('product-sale-price').value = product.salePrice;
+        document.getElementById('product-min-stock').value = product.minStock;
+        document.getElementById('product-quantity').value = product.quantity;
+        document.getElementById('product-supplier').value = product.supplier || '';
+        document.getElementById('product-description').value = product.description || '';
+    } else {
+        title.innerHTML = '<i class="fa-solid fa-wine-bottle"></i> Novo Produto';
+    }
+
+    openModal('product-modal');
+}\r\n\r\nfunction executeDelete() {
+    if (!pendingDeleteId || !pendingDeleteType) return;
+
+    if (pendingDeleteType === 'product') {
+        const product = getProductById(pendingDeleteId);
+        const movementsCount = movements.filter(m => m.productId === pendingDeleteId).length;
+        if (movementsCount > 0) {
+            showToast(`Não é possível excluir "${product?.name}" — existem ${movementsCount} movimentação(ões) associada(s).`, 'error');
+            closeModal('confirm-modal');
+            pendingDeleteId = null;
+            pendingDeleteType = null;
+            return;
+        }
+
+        products = products.filter(p => p.id !== pendingDeleteId);
+        // Remover movimentos associados (opcional) - mantemos o comportamento original removendo também movimentos
+        movements = movements.filter(m => m.productId !== pendingDeleteId);
+        saveData(STORAGE_KEYS.products, products);
+        saveData(STORAGE_KEYS.movements, movements);
+        showToast(`Produto "${product?.name}" excluído`, 'warning');
+        renderProducts();
+    } else if (pendingDeleteType === 'category') {
+        const cat = getCategoryById(pendingDeleteId);
+        const hasProducts = products.some(p => p.categoryId === pendingDeleteId);
+        if (hasProducts) {
+            showToast('Remova todos os produtos desta categoria primeiro!', 'error');
+        } else {
+            categories = categories.filter(c => c.id !== pendingDeleteId);
+            saveData(STORAGE_KEYS.categories, categories);
+            showToast(`Categoria "${cat?.name}" excluída`, 'warning');
+            renderCategories();
+        }
+    }
+
+    pendingDeleteId = null;
+    pendingDeleteType = null;
+    closeModal('confirm-modal');
+}\n\nfunction saveProduct(e) {
+    e.preventDefault();
+    const id = document.getElementById('product-id').value;
+    const productData = {
+        name: document.getElementById('product-name').value.trim(),
+        brand: document.getElementById('product-brand').value.trim(),
+        categoryId: document.getElementById('product-category').value,
+        volume: document.getElementById('product-volume').value.trim(),
+        purchasePrice: parseFloat(document.getElementById('product-purchase-price').value) || 0,
+        salePrice: parseFloat(document.getElementById('product-sale-price').value) || 0,
+        minStock: parseInt(document.getElementById('product-min-stock').value) || 0,
+        quantity: parseInt(document.getElementById('product-quantity').value) || 0,
+        supplier: document.getElementById('product-supplier').value.trim(),
+        description: document.getElementById('product-description').value.trim(),
+        sku: (document.getElementById('product-sku') && document.getElementById('product-sku').value.trim()) || '',
+        expiryDate: (document.getElementById('product-expiry-date') && document.getElementById('product-expiry-date').value) || '',
+    };
+
+    // ===== VALIDAÇÕES CRÍTICAS =====
+    if (!productData.name) {
+        showToast('Nome do produto é obrigatório', 'error');
+        return;
+    }
+
+    if (productData.purchasePrice >= productData.salePrice) {
+        showToast('❌ Preço de venda deve ser MAIOR que preço de compra!', 'error');
+        return;
+    }
+
+    if (productData.minStock < 0) {
+        showToast('Estoque mínimo não pode ser negativo', 'error');
+        return;
+    }
+
+    if (productData.quantity < 0) {
+        showToast('Quantidade não pode ser negativa', 'error');
+        return;
+    }
+
+    // Validar produtos duplicados (apenas ao criar novo)
+    if (!id) {
+        const duplicate = products.some(p => p.name.toLowerCase() === productData.name.toLowerCase());
+        if (duplicate) {
+            showToast(`⚠️ Um produto com o nome "${productData.name}" já existe!`, 'warning');
+            return;
+        }
+    }
+
+    if (!productData.categoryId) {
+        showToast('Selecione uma categoria', 'error');
+        return;
+    }
+
+    if (id) {
+        const index = products.findIndex(p => p.id === id);
+        if (index !== -1) {
+            products[index] = { ...products[index], ...productData };
+            showToast(`Produto "${productData.name}" atualizado!`, 'success');
+        }
+    } else {
+        productData.id = generateId();
+        products.push(productData);
+        showToast(`Produto "${productData.name}" cadastrado!`, 'success');
+    }
+
+    saveData(STORAGE_KEYS.products, products);
+    closeModal('product-modal');
+    renderProducts();
+}\r\n\r\nfunction executeDelete() {
+    if (!pendingDeleteId || !pendingDeleteType) return;
+
+    if (pendingDeleteType === 'product') {
+        const product = getProductById(pendingDeleteId);
+        const movementsCount = movements.filter(m => m.productId === pendingDeleteId).length;
+        if (movementsCount > 0) {
+            showToast(`Não é possível excluir "${product?.name}" — existem ${movementsCount} movimentação(ões) associada(s).`, 'error');
+            closeModal('confirm-modal');
+            pendingDeleteId = null;
+            pendingDeleteType = null;
+            return;
+        }
+
+        products = products.filter(p => p.id !== pendingDeleteId);
+        // Remover movimentos associados (opcional) - mantemos o comportamento original removendo também movimentos
+        movements = movements.filter(m => m.productId !== pendingDeleteId);
+        saveData(STORAGE_KEYS.products, products);
+        saveData(STORAGE_KEYS.movements, movements);
+        showToast(`Produto "${product?.name}" excluído`, 'warning');
+        renderProducts();
+    } else if (pendingDeleteType === 'category') {
+        const cat = getCategoryById(pendingDeleteId);
+        const hasProducts = products.some(p => p.categoryId === pendingDeleteId);
+        if (hasProducts) {
+            showToast('Remova todos os produtos desta categoria primeiro!', 'error');
+        } else {
+            categories = categories.filter(c => c.id !== pendingDeleteId);
+            saveData(STORAGE_KEYS.categories, categories);
+            showToast(`Categoria "${cat?.name}" excluída`, 'warning');
+            renderCategories();
+        }
+    }
+
+    pendingDeleteId = null;
+    pendingDeleteType = null;
+    closeModal('confirm-modal');
+}\n\nfunction editProduct(id) {
+    const product = getProductById(id);
+    if (product) openProductModal(product);
+}
+
+let pendingDeleteId = null;
+let pendingDeleteType = null;
+
+function executeDelete() {
+    if (!pendingDeleteId || !pendingDeleteType) return;
+
+    if (pendingDeleteType === 'product') {
+        const product = getProductById(pendingDeleteId);
+        const movementsCount = movements.filter(m => m.productId === pendingDeleteId).length;
+        if (movementsCount > 0) {
+            showToast(`Não é possível excluir "${product?.name}" — existem ${movementsCount} movimentação(ões) associada(s).`, 'error');
+            closeModal('confirm-modal');
+            pendingDeleteId = null;
+            pendingDeleteType = null;
+            return;
+        }
+
+        products = products.filter(p => p.id !== pendingDeleteId);
+        // Remover movimentos associados (opcional) - mantemos o comportamento original removendo também movimentos
+        movements = movements.filter(m => m.productId !== pendingDeleteId);
+        saveData(STORAGE_KEYS.products, products);
+        saveData(STORAGE_KEYS.movements, movements);
+        showToast(`Produto "${product?.name}" excluído`, 'warning');
+        renderProducts();
+    } else if (pendingDeleteType === 'category') {
+        const cat = getCategoryById(pendingDeleteId);
+        const hasProducts = products.some(p => p.categoryId === pendingDeleteId);
+        if (hasProducts) {
+            showToast('Remova todos os produtos desta categoria primeiro!', 'error');
+        } else {
+            categories = categories.filter(c => c.id !== pendingDeleteId);
+            saveData(STORAGE_KEYS.categories, categories);
+            showToast(`Categoria "${cat?.name}" excluída`, 'warning');
+            renderCategories();
+        }
+    }
+
+    pendingDeleteId = null;
+    pendingDeleteType = null;
+    closeModal('confirm-modal');
+}\n\nfunction confirmDeleteProduct(id) {
+    const product = getProductById(id);
+    if (!product) return;
+    
+    // Verificar se existem movimentações associadas
+    const movementsCount = movements.filter(m => m.productId === id).length;
+    
+    pendingDeleteId = id;
+    pendingDeleteType = 'product';
+    
+    if (movementsCount > 0) {
+        document.getElementById('confirm-message').textContent = `❌ Não é possível excluir "${product.name}"\n\nExistem ${movementsCount} movimentação(ões) associada(s).`;
+        document.getElementById('confirm-delete-btn').disabled = true;
+    } else {
+        document.getElementById('confirm-message').textContent = `Tem certeza que deseja excluir "${product.name}"?`;
+        document.getElementById('confirm-delete-btn').disabled = false;
+    }
+    
+    openModal('confirm-modal');
+}\r\n\r\nfunction executeDelete() {
+    if (!pendingDeleteId || !pendingDeleteType) return;
+
+    if (pendingDeleteType === 'product') {
+        const product = getProductById(pendingDeleteId);
+        const movementsCount = movements.filter(m => m.productId === pendingDeleteId).length;
+        if (movementsCount > 0) {
+            showToast(`Não é possível excluir "${product?.name}" — existem ${movementsCount} movimentação(ões) associada(s).`, 'error');
+            closeModal('confirm-modal');
+            pendingDeleteId = null;
+            pendingDeleteType = null;
+            return;
+        }
+
+        products = products.filter(p => p.id !== pendingDeleteId);
+        // Remover movimentos associados (opcional) - mantemos o comportamento original removendo também movimentos
+        movements = movements.filter(m => m.productId !== pendingDeleteId);
+        saveData(STORAGE_KEYS.products, products);
+        saveData(STORAGE_KEYS.movements, movements);
+        showToast(`Produto "${product?.name}" excluído`, 'warning');
+        renderProducts();
+    } else if (pendingDeleteType === 'category') {
+        const cat = getCategoryById(pendingDeleteId);
+        const hasProducts = products.some(p => p.categoryId === pendingDeleteId);
+        if (hasProducts) {
+            showToast('Remova todos os produtos desta categoria primeiro!', 'error');
+        } else {
+            categories = categories.filter(c => c.id !== pendingDeleteId);
+            saveData(STORAGE_KEYS.categories, categories);
+            showToast(`Categoria "${cat?.name}" excluída`, 'warning');
+            renderCategories();
+        }
+    }
+
+    pendingDeleteId = null;
+    pendingDeleteType = null;
+    closeModal('confirm-modal');
+}\n\nfunction executeDelete() {
+    if (!pendingDeleteId || !pendingDeleteType) return;
+
+    if (pendingDeleteType === 'product') {
+        const product = getProductById(pendingDeleteId);
+        products = products.filter(p => p.id !== pendingDeleteId);
+        movements = movements.filter(m => m.productId !== pendingDeleteId);
+        saveData(STORAGE_KEYS.products, products);
+        saveData(STORAGE_KEYS.movements, movements);
+        showToast(`Produto "${product?.name}" excluÃ­do`, 'warning');
+        renderProducts();
+    } else if (pendingDeleteType === 'category') {
+        const cat = getCategoryById(pendingDeleteId);
+        const hasProducts = products.some(p => p.categoryId === pendingDeleteId);
+        if (hasProducts) {
+            showToast('Remova todos os produtos desta categoria primeiro!', 'error');
+        } else {
+            categories = categories.filter(c => c.id !== pendingDeleteId);
+            saveData(STORAGE_KEYS.categories, categories);
+            showToast(`Categoria "${cat?.name}" excluÃ­da`, 'warning');
+            renderCategories();
+        }
+    }
+
+    pendingDeleteId = null;
+    pendingDeleteType = null;
+    closeModal('confirm-modal');
+}
+
+
+// ============ MOVEMENTS ============
+
+function executeDelete() {
+    if (!pendingDeleteId || !pendingDeleteType) return;
+
+    if (pendingDeleteType === 'product') {
+        const product = getProductById(pendingDeleteId);
+        const movementsCount = movements.filter(m => m.productId === pendingDeleteId).length;
+        if (movementsCount > 0) {
+            showToast(`Não é possível excluir "${product?.name}" — existem ${movementsCount} movimentação(ões) associada(s).`, 'error');
+            closeModal('confirm-modal');
+            pendingDeleteId = null;
+            pendingDeleteType = null;
+            return;
+        }
+
+        products = products.filter(p => p.id !== pendingDeleteId);
+        // Remover movimentos associados (opcional) - mantemos o comportamento original removendo também movimentos
+        movements = movements.filter(m => m.productId !== pendingDeleteId);
+        saveData(STORAGE_KEYS.products, products);
+        saveData(STORAGE_KEYS.movements, movements);
+        showToast(`Produto "${product?.name}" excluído`, 'warning');
+        renderProducts();
+    } else if (pendingDeleteType === 'category') {
+        const cat = getCategoryById(pendingDeleteId);
+        const hasProducts = products.some(p => p.categoryId === pendingDeleteId);
+        if (hasProducts) {
+            showToast('Remova todos os produtos desta categoria primeiro!', 'error');
+        } else {
+            categories = categories.filter(c => c.id !== pendingDeleteId);
+            saveData(STORAGE_KEYS.categories, categories);
+            showToast(`Categoria "${cat?.name}" excluída`, 'warning');
+            renderCategories();
+        }
+    }
+
+    pendingDeleteId = null;
+    pendingDeleteType = null;
+    closeModal('confirm-modal');
+}\n\nfunction renderMovements() {
+    const tbody = document.getElementById('movements-table-body');
+    let filtered = getFilteredMovements();
+
+    if (filtered.length === 0) {
+        tbody.innerHTML = '<tr class="empty-row"><td colspan="6"><div class="empty-state"><i class="fa-solid fa-arrow-right-arrow-left"></i><h3>Nenhuma movimentaÃ§Ã£o</h3><p>Registre entradas ou saÃ­das</p></div></td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = filtered.map(mov => {
+        const product = getProductById(mov.productId);
+        const productName = product ? product.name : 'Produto removido';
+        const isEntry = mov.type === 'entry';
+
+        return `<tr>
+            <td>${formatDateTime(mov.date)}</td>
+            <td class="fw-bold">${productName}</td>
+            <td><span class="badge ${isEntry ? 'badge-entry' : 'badge-exit'}">${isEntry ? 'â†“ Entrada' : 'â†‘ SaÃ­da'}</span></td>
+            <td class="${isEntry ? 'text-success' : 'text-danger'} fw-bold">${isEntry ? '+' : '-'}${mov.quantity}</td>
+            <td>${mov.reason}</td>
+            <td class="text-muted">${mov.notes || 'â€”'}</td>
+        </tr>`;
+    }).join('');
+}\r\n\r\nfunction executeDelete() {
+    if (!pendingDeleteId || !pendingDeleteType) return;
+
+    if (pendingDeleteType === 'product') {
+        const product = getProductById(pendingDeleteId);
+        const movementsCount = movements.filter(m => m.productId === pendingDeleteId).length;
+        if (movementsCount > 0) {
+            showToast(`Não é possível excluir "${product?.name}" — existem ${movementsCount} movimentação(ões) associada(s).`, 'error');
+            closeModal('confirm-modal');
+            pendingDeleteId = null;
+            pendingDeleteType = null;
+            return;
+        }
+
+        products = products.filter(p => p.id !== pendingDeleteId);
+        // Remover movimentos associados (opcional) - mantemos o comportamento original removendo também movimentos
+        movements = movements.filter(m => m.productId !== pendingDeleteId);
+        saveData(STORAGE_KEYS.products, products);
+        saveData(STORAGE_KEYS.movements, movements);
+        showToast(`Produto "${product?.name}" excluído`, 'warning');
+        renderProducts();
+    } else if (pendingDeleteType === 'category') {
+        const cat = getCategoryById(pendingDeleteId);
+        const hasProducts = products.some(p => p.categoryId === pendingDeleteId);
+        if (hasProducts) {
+            showToast('Remova todos os produtos desta categoria primeiro!', 'error');
+        } else {
+            categories = categories.filter(c => c.id !== pendingDeleteId);
+            saveData(STORAGE_KEYS.categories, categories);
+            showToast(`Categoria "${cat?.name}" excluída`, 'warning');
+            renderCategories();
+        }
+    }
+
+    pendingDeleteId = null;
+    pendingDeleteType = null;
+    closeModal('confirm-modal');
+}\n\nfunction getFilteredMovements() {
+    const search = document.getElementById('movement-search').value.toLowerCase().trim();
+    const typeFilter = document.getElementById('movement-filter-type').value;
+    const dateStart = document.getElementById('movement-date-start').value;
+    const dateEnd = document.getElementById('movement-date-end').value;
+
+    return movements.filter(m => {
+        if (typeFilter && m.type !== typeFilter) return false;
+        if (search) {
+            const product = getProductById(m.productId);
+            const productName = product ? product.name.toLowerCase() : '';
+            if (!productName.includes(search) && !m.reason.toLowerCase().includes(search)) return false;
+        }
+        if (dateStart) {
+            const mDate = new Date(m.date).toISOString().split('T')[0];
+            if (mDate < dateStart) return false;
+        }
+        if (dateEnd) {
+            const mDate = new Date(m.date).toISOString().split('T')[0];
+            if (mDate > dateEnd) return false;
+        }
+        return true;
+    });
+}\r\n\r\nfunction executeDelete() {
+    if (!pendingDeleteId || !pendingDeleteType) return;
+
+    if (pendingDeleteType === 'product') {
+        const product = getProductById(pendingDeleteId);
+        const movementsCount = movements.filter(m => m.productId === pendingDeleteId).length;
+        if (movementsCount > 0) {
+            showToast(`Não é possível excluir "${product?.name}" — existem ${movementsCount} movimentação(ões) associada(s).`, 'error');
+            closeModal('confirm-modal');
+            pendingDeleteId = null;
+            pendingDeleteType = null;
+            return;
+        }
+
+        products = products.filter(p => p.id !== pendingDeleteId);
+        // Remover movimentos associados (opcional) - mantemos o comportamento original removendo também movimentos
+        movements = movements.filter(m => m.productId !== pendingDeleteId);
+        saveData(STORAGE_KEYS.products, products);
+        saveData(STORAGE_KEYS.movements, movements);
+        showToast(`Produto "${product?.name}" excluído`, 'warning');
+        renderProducts();
+    } else if (pendingDeleteType === 'category') {
+        const cat = getCategoryById(pendingDeleteId);
+        const hasProducts = products.some(p => p.categoryId === pendingDeleteId);
+        if (hasProducts) {
+            showToast('Remova todos os produtos desta categoria primeiro!', 'error');
+        } else {
+            categories = categories.filter(c => c.id !== pendingDeleteId);
+            saveData(STORAGE_KEYS.categories, categories);
+            showToast(`Categoria "${cat?.name}" excluída`, 'warning');
+            renderCategories();
+        }
+    }
+
+    pendingDeleteId = null;
+    pendingDeleteType = null;
+    closeModal('confirm-modal');
+}\n\nfunction openMovementModal(type = 'entry') {
+    const form = document.getElementById('movement-form');
+    const title = document.getElementById('movement-modal-title');
+    const header = document.getElementById('movement-modal-header');
+    const submitBtn = document.getElementById('submit-movement-btn');
+
+    form.reset();
+    document.getElementById('movement-type').value = type;
+
+    // Populate products select
+    const select = document.getElementById('movement-product');
+    select.innerHTML = '<option value="">Selecione um produto</option>';
+    products.forEach(p => {
+        const cat = getCategoryById(p.categoryId);
+        const catIcon = cat ? cat.icon : 'ðŸ“¦';
+        select.innerHTML += `<option value="${p.id}">${catIcon} ${p.name} (estoque: ${p.quantity})</option>`;
+    });
+
+    // Populate reasons
+    const reasonSelect = document.getElementById('movement-reason');
+    const entryReasons = ['Compra de fornecedor', 'DevoluÃ§Ã£o de cliente', 'Ajuste de inventÃ¡rio', 'TransferÃªncia entre unidades', 'BonificaÃ§Ã£o', 'Outro'];
+    const exitReasons = ['Venda', 'Quebra/Avaria', 'Vencimento', 'Consumo interno', 'Ajuste de inventÃ¡rio', 'TransferÃªncia', 'Outro'];
+
+    reasonSelect.innerHTML = '<option value="">Selecione</option>';
+    (type === 'entry' ? entryReasons : exitReasons).forEach(r => {
+        reasonSelect.innerHTML += `<option value="${r}">${r}</option>`;
+    });
+
+    if (type === 'entry') {
+        title.innerHTML = '<i class="fa-solid fa-arrow-down"></i> Nova Entrada';
+        header.className = 'modal-header entry';
+        submitBtn.className = 'btn btn-success';
+        submitBtn.innerHTML = '<i class="fa-solid fa-arrow-down"></i> Registrar Entrada';
+    } else {
+        title.innerHTML = '<i class="fa-solid fa-arrow-up"></i> Nova SaÃ­da';
+        header.className = 'modal-header exit';
+        submitBtn.className = 'btn btn-danger';
+        submitBtn.innerHTML = '<i class="fa-solid fa-arrow-up"></i> Registrar SaÃ­da';
+    }
+
+    openModal('movement-modal');
+}\r\n\r\nfunction executeDelete() {
+    if (!pendingDeleteId || !pendingDeleteType) return;
+
+    if (pendingDeleteType === 'product') {
+        const product = getProductById(pendingDeleteId);
+        const movementsCount = movements.filter(m => m.productId === pendingDeleteId).length;
+        if (movementsCount > 0) {
+            showToast(`Não é possível excluir "${product?.name}" — existem ${movementsCount} movimentação(ões) associada(s).`, 'error');
+            closeModal('confirm-modal');
+            pendingDeleteId = null;
+            pendingDeleteType = null;
+            return;
+        }
+
+        products = products.filter(p => p.id !== pendingDeleteId);
+        // Remover movimentos associados (opcional) - mantemos o comportamento original removendo também movimentos
+        movements = movements.filter(m => m.productId !== pendingDeleteId);
+        saveData(STORAGE_KEYS.products, products);
+        saveData(STORAGE_KEYS.movements, movements);
+        showToast(`Produto "${product?.name}" excluído`, 'warning');
+        renderProducts();
+    } else if (pendingDeleteType === 'category') {
+        const cat = getCategoryById(pendingDeleteId);
+        const hasProducts = products.some(p => p.categoryId === pendingDeleteId);
+        if (hasProducts) {
+            showToast('Remova todos os produtos desta categoria primeiro!', 'error');
+        } else {
+            categories = categories.filter(c => c.id !== pendingDeleteId);
+            saveData(STORAGE_KEYS.categories, categories);
+            showToast(`Categoria "${cat?.name}" excluída`, 'warning');
+            renderCategories();
+        }
+    }
+
+    pendingDeleteId = null;
+    pendingDeleteType = null;
+    closeModal('confirm-modal');
+}\n\nfunction openQuickEntry(productId) {
+    openMovementModal('entry');
+    document.getElementById('movement-product').value = productId;
+}\r\n\r\nfunction executeDelete() {
+    if (!pendingDeleteId || !pendingDeleteType) return;
+
+    if (pendingDeleteType === 'product') {
+        const product = getProductById(pendingDeleteId);
+        const movementsCount = movements.filter(m => m.productId === pendingDeleteId).length;
+        if (movementsCount > 0) {
+            showToast(`Não é possível excluir "${product?.name}" — existem ${movementsCount} movimentação(ões) associada(s).`, 'error');
+            closeModal('confirm-modal');
+            pendingDeleteId = null;
+            pendingDeleteType = null;
+            return;
+        }
+
+        products = products.filter(p => p.id !== pendingDeleteId);
+        // Remover movimentos associados (opcional) - mantemos o comportamento original removendo também movimentos
+        movements = movements.filter(m => m.productId !== pendingDeleteId);
+        saveData(STORAGE_KEYS.products, products);
+        saveData(STORAGE_KEYS.movements, movements);
+        showToast(`Produto "${product?.name}" excluído`, 'warning');
+        renderProducts();
+    } else if (pendingDeleteType === 'category') {
+        const cat = getCategoryById(pendingDeleteId);
+        const hasProducts = products.some(p => p.categoryId === pendingDeleteId);
+        if (hasProducts) {
+            showToast('Remova todos os produtos desta categoria primeiro!', 'error');
+        } else {
+            categories = categories.filter(c => c.id !== pendingDeleteId);
+            saveData(STORAGE_KEYS.categories, categories);
+            showToast(`Categoria "${cat?.name}" excluída`, 'warning');
+            renderCategories();
+        }
+    }
+
+    pendingDeleteId = null;
+    pendingDeleteType = null;
+    closeModal('confirm-modal');
+}\n\nfunction saveMovement(e) {
+    e.preventDefault();
+    const type = document.getElementById('movement-type').value;
+    const productId = document.getElementById('movement-product').value;
+    const quantity = parseInt(document.getElementById('movement-quantity').value) || 0;
+    const reason = document.getElementById('movement-reason').value;
+    const notes = document.getElementById('movement-notes').value.trim();
+
+    if (!productId || quantity <= 0 || !reason) {
+        showToast('Preencha todos os campos obrigatÃ³rios', 'error');
+        return;
+    }
+
+    const product = getProductById(productId);
+    if (!product) {
+        showToast('Produto nÃ£o encontrado', 'error');
+        return;
+    }
+
+    if (type === 'exit' && quantity > product.quantity) {
+        showToast(`Estoque insuficiente! DisponÃ­vel: ${product.quantity} unidades`, 'error');
+        return;
+    }
+
+    // Update stock
+    if (type === 'entry') {
+        product.quantity += quantity;
+    } else {
+        product.quantity -= quantity;
+    }
+
+    // Create movement record
+    const movement = {
+        id: generateId(),
+        productId,
+        type,
+        quantity,
+        reason,
+        notes,
+        date: new Date().toISOString(),
+    };
+
+    movements.unshift(movement);
+    saveData(STORAGE_KEYS.products, products);
+    saveData(STORAGE_KEYS.movements, movements);
+
+    closeModal('movement-modal');
+    showToast(
+        `${type === 'entry' ? 'Entrada' : 'SaÃ­da'} de ${quantity}x "${product.name}" registrada!`,
+        type === 'entry' ? 'success' : 'warning'
+    );
+
+    // Refresh current page
+    const activePage = document.querySelector('.page.active');
+    if (activePage) {
+        const pageId = activePage.id.replace('page-', '');
+        navigateTo(pageId);
+    }
+}
+
+
+// ============ CATEGORIES ============
+
+function executeDelete() {
+    if (!pendingDeleteId || !pendingDeleteType) return;
+
+    if (pendingDeleteType === 'product') {
+        const product = getProductById(pendingDeleteId);
+        const movementsCount = movements.filter(m => m.productId === pendingDeleteId).length;
+        if (movementsCount > 0) {
+            showToast(`Não é possível excluir "${product?.name}" — existem ${movementsCount} movimentação(ões) associada(s).`, 'error');
+            closeModal('confirm-modal');
+            pendingDeleteId = null;
+            pendingDeleteType = null;
+            return;
+        }
+
+        products = products.filter(p => p.id !== pendingDeleteId);
+        // Remover movimentos associados (opcional) - mantemos o comportamento original removendo também movimentos
+        movements = movements.filter(m => m.productId !== pendingDeleteId);
+        saveData(STORAGE_KEYS.products, products);
+        saveData(STORAGE_KEYS.movements, movements);
+        showToast(`Produto "${product?.name}" excluído`, 'warning');
+        renderProducts();
+    } else if (pendingDeleteType === 'category') {
+        const cat = getCategoryById(pendingDeleteId);
+        const hasProducts = products.some(p => p.categoryId === pendingDeleteId);
+        if (hasProducts) {
+            showToast('Remova todos os produtos desta categoria primeiro!', 'error');
+        } else {
+            categories = categories.filter(c => c.id !== pendingDeleteId);
+            saveData(STORAGE_KEYS.categories, categories);
+            showToast(`Categoria "${cat?.name}" excluída`, 'warning');
+            renderCategories();
+        }
+    }
+
+    pendingDeleteId = null;
+    pendingDeleteType = null;
+    closeModal('confirm-modal');
+}\n\nfunction renderCategories() {
+    const container = document.getElementById('categories-grid');
+
+    if (categories.length === 0) {
+        container.innerHTML = '<div class="empty-state" style="grid-column: 1/-1"><i class="fa-solid fa-tags"></i><h3>Nenhuma categoria</h3><p>Crie categorias para organizar seus produtos</p></div>';
+        return;
+    }
+
+    container.innerHTML = categories.map(cat => {
+        const productCount = products.filter(p => p.categoryId === cat.id).length;
+        const totalStock = products.filter(p => p.categoryId === cat.id).reduce((sum, p) => sum + p.quantity, 0);
+
+        return `<div class="category-card">
+            <div class="cat-actions">
+                <button class="btn-icon-sm edit" title="Editar" onclick="editCategory('${cat.id}')"><i class="fa-solid fa-pen"></i></button>
+                <button class="btn-icon-sm delete" title="Excluir" onclick="confirmDeleteCategory('${cat.id}')"><i class="fa-solid fa-trash"></i></button>
+            </div>
+            <span class="cat-icon">${cat.icon}</span>
+            <span class="cat-name">${cat.name}</span>
+            <span class="cat-count">${productCount} produto${productCount !== 1 ? 's' : ''} â€¢ ${totalStock} un em estoque</span>
+            <div class="cat-bar" style="background: linear-gradient(90deg, ${cat.color}, ${cat.color}40)"></div>
+        </div>`;
+    }).join('');
+}\r\n\r\nfunction executeDelete() {
+    if (!pendingDeleteId || !pendingDeleteType) return;
+
+    if (pendingDeleteType === 'product') {
+        const product = getProductById(pendingDeleteId);
+        const movementsCount = movements.filter(m => m.productId === pendingDeleteId).length;
+        if (movementsCount > 0) {
+            showToast(`Não é possível excluir "${product?.name}" — existem ${movementsCount} movimentação(ões) associada(s).`, 'error');
+            closeModal('confirm-modal');
+            pendingDeleteId = null;
+            pendingDeleteType = null;
+            return;
+        }
+
+        products = products.filter(p => p.id !== pendingDeleteId);
+        // Remover movimentos associados (opcional) - mantemos o comportamento original removendo também movimentos
+        movements = movements.filter(m => m.productId !== pendingDeleteId);
+        saveData(STORAGE_KEYS.products, products);
+        saveData(STORAGE_KEYS.movements, movements);
+        showToast(`Produto "${product?.name}" excluído`, 'warning');
+        renderProducts();
+    } else if (pendingDeleteType === 'category') {
+        const cat = getCategoryById(pendingDeleteId);
+        const hasProducts = products.some(p => p.categoryId === pendingDeleteId);
+        if (hasProducts) {
+            showToast('Remova todos os produtos desta categoria primeiro!', 'error');
+        } else {
+            categories = categories.filter(c => c.id !== pendingDeleteId);
+            saveData(STORAGE_KEYS.categories, categories);
+            showToast(`Categoria "${cat?.name}" excluída`, 'warning');
+            renderCategories();
+        }
+    }
+
+    pendingDeleteId = null;
+    pendingDeleteType = null;
+    closeModal('confirm-modal');
+}\n\nfunction openCategoryModal(category = null) {
+    const form = document.getElementById('category-form');
+    const title = document.getElementById('category-modal-title');
+
+    form.reset();
+    document.getElementById('category-id').value = '';
+    document.getElementById('category-color').value = '#e8a33d';
+
+    if (category) {
+        title.innerHTML = '<i class="fa-solid fa-pen"></i> Editar Categoria';
+        document.getElementById('category-id').value = category.id;
+        document.getElementById('category-name').value = category.name;
+        document.getElementById('category-icon').value = category.icon;
+        document.getElementById('category-color').value = category.color;
+    } else {
+        title.innerHTML = '<i class="fa-solid fa-tag"></i> Nova Categoria';
+    }
+
+    openModal('category-modal');
+}\r\n\r\nfunction executeDelete() {
+    if (!pendingDeleteId || !pendingDeleteType) return;
+
+    if (pendingDeleteType === 'product') {
+        const product = getProductById(pendingDeleteId);
+        const movementsCount = movements.filter(m => m.productId === pendingDeleteId).length;
+        if (movementsCount > 0) {
+            showToast(`Não é possível excluir "${product?.name}" — existem ${movementsCount} movimentação(ões) associada(s).`, 'error');
+            closeModal('confirm-modal');
+            pendingDeleteId = null;
+            pendingDeleteType = null;
+            return;
+        }
+
+        products = products.filter(p => p.id !== pendingDeleteId);
+        // Remover movimentos associados (opcional) - mantemos o comportamento original removendo também movimentos
+        movements = movements.filter(m => m.productId !== pendingDeleteId);
+        saveData(STORAGE_KEYS.products, products);
+        saveData(STORAGE_KEYS.movements, movements);
+        showToast(`Produto "${product?.name}" excluído`, 'warning');
+        renderProducts();
+    } else if (pendingDeleteType === 'category') {
+        const cat = getCategoryById(pendingDeleteId);
+        const hasProducts = products.some(p => p.categoryId === pendingDeleteId);
+        if (hasProducts) {
+            showToast('Remova todos os produtos desta categoria primeiro!', 'error');
+        } else {
+            categories = categories.filter(c => c.id !== pendingDeleteId);
+            saveData(STORAGE_KEYS.categories, categories);
+            showToast(`Categoria "${cat?.name}" excluída`, 'warning');
+            renderCategories();
+        }
+    }
+
+    pendingDeleteId = null;
+    pendingDeleteType = null;
+    closeModal('confirm-modal');
+}\n\nfunction saveCategory(e) {
+    e.preventDefault();
+    const id = document.getElementById('category-id').value;
+    const catData = {
+        name: document.getElementById('category-name').value.trim(),
+        icon: document.getElementById('category-icon').value.trim() || 'ðŸ“¦',
+        color: document.getElementById('category-color').value,
+    };
+
+    if (!catData.name) {
+        showToast('Informe o nome da categoria', 'error');
+        return;
+    }
+
+    if (id) {
+        const index = categories.findIndex(c => c.id === id);
+        if (index !== -1) {
+            categories[index] = { ...categories[index], ...catData };
+            showToast(`Categoria "${catData.name}" atualizada!`, 'success');
+        }
+    } else {
+        catData.id = generateId();
+        categories.push(catData);
+        showToast(`Categoria "${catData.name}" criada!`, 'success');
+    }
+
+    saveData(STORAGE_KEYS.categories, categories);
+    closeModal('category-modal');
+    renderCategories();
+}\r\n\r\nfunction executeDelete() {
+    if (!pendingDeleteId || !pendingDeleteType) return;
+
+    if (pendingDeleteType === 'product') {
+        const product = getProductById(pendingDeleteId);
+        const movementsCount = movements.filter(m => m.productId === pendingDeleteId).length;
+        if (movementsCount > 0) {
+            showToast(`Não é possível excluir "${product?.name}" — existem ${movementsCount} movimentação(ões) associada(s).`, 'error');
+            closeModal('confirm-modal');
+            pendingDeleteId = null;
+            pendingDeleteType = null;
+            return;
+        }
+
+        products = products.filter(p => p.id !== pendingDeleteId);
+        // Remover movimentos associados (opcional) - mantemos o comportamento original removendo também movimentos
+        movements = movements.filter(m => m.productId !== pendingDeleteId);
+        saveData(STORAGE_KEYS.products, products);
+        saveData(STORAGE_KEYS.movements, movements);
+        showToast(`Produto "${product?.name}" excluído`, 'warning');
+        renderProducts();
+    } else if (pendingDeleteType === 'category') {
+        const cat = getCategoryById(pendingDeleteId);
+        const hasProducts = products.some(p => p.categoryId === pendingDeleteId);
+        if (hasProducts) {
+            showToast('Remova todos os produtos desta categoria primeiro!', 'error');
+        } else {
+            categories = categories.filter(c => c.id !== pendingDeleteId);
+            saveData(STORAGE_KEYS.categories, categories);
+            showToast(`Categoria "${cat?.name}" excluída`, 'warning');
+            renderCategories();
+        }
+    }
+
+    pendingDeleteId = null;
+    pendingDeleteType = null;
+    closeModal('confirm-modal');
+}\n\nfunction editCategory(id) {
+    const cat = getCategoryById(id);
+    if (cat) openCategoryModal(cat);
+}\r\n\r\nfunction executeDelete() {
+    if (!pendingDeleteId || !pendingDeleteType) return;
+
+    if (pendingDeleteType === 'product') {
+        const product = getProductById(pendingDeleteId);
+        const movementsCount = movements.filter(m => m.productId === pendingDeleteId).length;
+        if (movementsCount > 0) {
+            showToast(`Não é possível excluir "${product?.name}" — existem ${movementsCount} movimentação(ões) associada(s).`, 'error');
+            closeModal('confirm-modal');
+            pendingDeleteId = null;
+            pendingDeleteType = null;
+            return;
+        }
+
+        products = products.filter(p => p.id !== pendingDeleteId);
+        // Remover movimentos associados (opcional) - mantemos o comportamento original removendo também movimentos
+        movements = movements.filter(m => m.productId !== pendingDeleteId);
+        saveData(STORAGE_KEYS.products, products);
+        saveData(STORAGE_KEYS.movements, movements);
+        showToast(`Produto "${product?.name}" excluído`, 'warning');
+        renderProducts();
+    } else if (pendingDeleteType === 'category') {
+        const cat = getCategoryById(pendingDeleteId);
+        const hasProducts = products.some(p => p.categoryId === pendingDeleteId);
+        if (hasProducts) {
+            showToast('Remova todos os produtos desta categoria primeiro!', 'error');
+        } else {
+            categories = categories.filter(c => c.id !== pendingDeleteId);
+            saveData(STORAGE_KEYS.categories, categories);
+            showToast(`Categoria "${cat?.name}" excluída`, 'warning');
+            renderCategories();
+        }
+    }
+
+    pendingDeleteId = null;
+    pendingDeleteType = null;
+    closeModal('confirm-modal');
+}\n\nfunction confirmDeleteCategory(id) {
+    const cat = getCategoryById(id);
+    if (!cat) return;
+    const productCount = products.filter(p => p.categoryId === id).length;
+
+    pendingDeleteId = id;
+    pendingDeleteType = 'category';
+
+    if (productCount > 0) {
+        document.getElementById('confirm-message').textContent = `A categoria "${cat.name}" possui ${productCount} produto(s). Remova os produtos antes de excluir.`;
+    } else {
+        document.getElementById('confirm-message').textContent = `Excluir a categoria "${cat.name}"?`;
+    }
+    openModal('confirm-modal');
+}
+
+
+// ============ REPORTS ============
+
+function executeDelete() {
+    if (!pendingDeleteId || !pendingDeleteType) return;
+
+    if (pendingDeleteType === 'product') {
+        const product = getProductById(pendingDeleteId);
+        const movementsCount = movements.filter(m => m.productId === pendingDeleteId).length;
+        if (movementsCount > 0) {
+            showToast(`Não é possível excluir "${product?.name}" — existem ${movementsCount} movimentação(ões) associada(s).`, 'error');
+            closeModal('confirm-modal');
+            pendingDeleteId = null;
+            pendingDeleteType = null;
+            return;
+        }
+
+        products = products.filter(p => p.id !== pendingDeleteId);
+        // Remover movimentos associados (opcional) - mantemos o comportamento original removendo também movimentos
+        movements = movements.filter(m => m.productId !== pendingDeleteId);
+        saveData(STORAGE_KEYS.products, products);
+        saveData(STORAGE_KEYS.movements, movements);
+        showToast(`Produto "${product?.name}" excluído`, 'warning');
+        renderProducts();
+    } else if (pendingDeleteType === 'category') {
+        const cat = getCategoryById(pendingDeleteId);
+        const hasProducts = products.some(p => p.categoryId === pendingDeleteId);
+        if (hasProducts) {
+            showToast('Remova todos os produtos desta categoria primeiro!', 'error');
+        } else {
+            categories = categories.filter(c => c.id !== pendingDeleteId);
+            saveData(STORAGE_KEYS.categories, categories);
+            showToast(`Categoria "${cat?.name}" excluída`, 'warning');
+            renderCategories();
+        }
+    }
+
+    pendingDeleteId = null;
+    pendingDeleteType = null;
+    closeModal('confirm-modal');
+}\n\nfunction renderReports() {
+    renderReportValueChart();
+    renderReportWeekChart();
+    renderReportLowStock();
+    renderReportMostMoved();
+    renderReportSummary();
+}\r\n\r\nfunction executeDelete() {
+    if (!pendingDeleteId || !pendingDeleteType) return;
+
+    if (pendingDeleteType === 'product') {
+        const product = getProductById(pendingDeleteId);
+        const movementsCount = movements.filter(m => m.productId === pendingDeleteId).length;
+        if (movementsCount > 0) {
+            showToast(`Não é possível excluir "${product?.name}" — existem ${movementsCount} movimentação(ões) associada(s).`, 'error');
+            closeModal('confirm-modal');
+            pendingDeleteId = null;
+            pendingDeleteType = null;
+            return;
+        }
+
+        products = products.filter(p => p.id !== pendingDeleteId);
+        // Remover movimentos associados (opcional) - mantemos o comportamento original removendo também movimentos
+        movements = movements.filter(m => m.productId !== pendingDeleteId);
+        saveData(STORAGE_KEYS.products, products);
+        saveData(STORAGE_KEYS.movements, movements);
+        showToast(`Produto "${product?.name}" excluído`, 'warning');
+        renderProducts();
+    } else if (pendingDeleteType === 'category') {
+        const cat = getCategoryById(pendingDeleteId);
+        const hasProducts = products.some(p => p.categoryId === pendingDeleteId);
+        if (hasProducts) {
+            showToast('Remova todos os produtos desta categoria primeiro!', 'error');
+        } else {
+            categories = categories.filter(c => c.id !== pendingDeleteId);
+            saveData(STORAGE_KEYS.categories, categories);
+            showToast(`Categoria "${cat?.name}" excluída`, 'warning');
+            renderCategories();
+        }
+    }
+
+    pendingDeleteId = null;
+    pendingDeleteType = null;
+    closeModal('confirm-modal');
+}\n\nfunction renderReportValueChart() {
+    const container = document.getElementById('report-value-chart');
+    const catValues = categories.map(cat => {
+        const value = products
+            .filter(p => p.categoryId === cat.id)
+            .reduce((sum, p) => sum + (p.salePrice * p.quantity), 0);
+        return { ...cat, value };
+    }).filter(c => c.value > 0).sort((a, b) => b.value - a.value);
+
+    if (catValues.length === 0) {
+        container.innerHTML = '<div class="chart-empty"><i class="fa-solid fa-chart-bar"></i><span>Sem dados para exibir</span></div>';
+        return;
+    }
+
+    const maxValue = Math.max(...catValues.map(c => c.value));
+
+    container.innerHTML = catValues.map(cat => {
+        const pct = Math.max((cat.value / maxValue) * 100, 8);
+        return `<div class="h-chart-item">
+            <span class="h-chart-label">${cat.icon} ${cat.name}</span>
+            <div class="h-chart-bar-wrap">
+                <div class="h-chart-bar" style="width:${pct}%; background: linear-gradient(90deg, ${cat.color}, ${cat.color}99);">${formatCurrency(cat.value)}</div>
+            </div>
+        </div>`;
+    }).join('');
+}\r\n\r\nfunction executeDelete() {
+    if (!pendingDeleteId || !pendingDeleteType) return;
+
+    if (pendingDeleteType === 'product') {
+        const product = getProductById(pendingDeleteId);
+        const movementsCount = movements.filter(m => m.productId === pendingDeleteId).length;
+        if (movementsCount > 0) {
+            showToast(`Não é possível excluir "${product?.name}" — existem ${movementsCount} movimentação(ões) associada(s).`, 'error');
+            closeModal('confirm-modal');
+            pendingDeleteId = null;
+            pendingDeleteType = null;
+            return;
+        }
+
+        products = products.filter(p => p.id !== pendingDeleteId);
+        // Remover movimentos associados (opcional) - mantemos o comportamento original removendo também movimentos
+        movements = movements.filter(m => m.productId !== pendingDeleteId);
+        saveData(STORAGE_KEYS.products, products);
+        saveData(STORAGE_KEYS.movements, movements);
+        showToast(`Produto "${product?.name}" excluído`, 'warning');
+        renderProducts();
+    } else if (pendingDeleteType === 'category') {
+        const cat = getCategoryById(pendingDeleteId);
+        const hasProducts = products.some(p => p.categoryId === pendingDeleteId);
+        if (hasProducts) {
+            showToast('Remova todos os produtos desta categoria primeiro!', 'error');
+        } else {
+            categories = categories.filter(c => c.id !== pendingDeleteId);
+            saveData(STORAGE_KEYS.categories, categories);
+            showToast(`Categoria "${cat?.name}" excluída`, 'warning');
+            renderCategories();
+        }
+    }
+
+    pendingDeleteId = null;
+    pendingDeleteType = null;
+    closeModal('confirm-modal');
+}\n\nfunction renderReportWeekChart() {
+    const container = document.getElementById('report-week-chart');
+    const days = [];
+    const dayLabels = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'SÃ¡b'];
+    const now = new Date();
+
+    for (let i = 6; i >= 0; i--) {
+        const date = new Date(now);
+        date.setDate(date.getDate() - i);
+        const dateStr = date.toISOString().split('T')[0];
+        const dayName = dayLabels[date.getDay()];
+
+        const entries = movements.filter(m => m.type === 'entry' && m.date.startsWith(dateStr)).reduce((sum, m) => sum + m.quantity, 0);
+        const exits = movements.filter(m => m.type === 'exit' && m.date.startsWith(dateStr)).reduce((sum, m) => sum + m.quantity, 0);
+
+        days.push({ dateStr, dayName, entries, exits, isToday: i === 0 });
+    }
+
+    const maxVal = Math.max(...days.map(d => Math.max(d.entries, d.exits)), 1);
+
+    container.innerHTML = days.map(d => {
+        const entryH = Math.max((d.entries / maxVal) * 100, 2);
+        const exitH = Math.max((d.exits / maxVal) * 100, 2);
+
+        return `<div class="week-day">
+            <div class="week-day-bars">
+                <div class="week-bar entries" style="height:${d.entries > 0 ? entryH : 2}%" data-count="â†“${d.entries}"></div>
+                <div class="week-bar exits" style="height:${d.exits > 0 ? exitH : 2}%" data-count="â†‘${d.exits}"></div>
+            </div>
+            <span class="week-label" style="${d.isToday ? 'color:var(--accent);font-weight:700' : ''}">${d.dayName}</span>
+        </div>`;
+    }).join('') + `
+    <div style="position:absolute;top:0;right:0;display:flex;gap:1rem;font-size:0.7rem;color:var(--text-muted)">
+        <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:2px;background:var(--success)"></span>Entradas</span>
+        <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:2px;background:var(--danger)"></span>SaÃ­das</span>
+    </div>`;
+
+    container.style.position = 'relative';
+}\r\n\r\nfunction executeDelete() {
+    if (!pendingDeleteId || !pendingDeleteType) return;
+
+    if (pendingDeleteType === 'product') {
+        const product = getProductById(pendingDeleteId);
+        const movementsCount = movements.filter(m => m.productId === pendingDeleteId).length;
+        if (movementsCount > 0) {
+            showToast(`Não é possível excluir "${product?.name}" — existem ${movementsCount} movimentação(ões) associada(s).`, 'error');
+            closeModal('confirm-modal');
+            pendingDeleteId = null;
+            pendingDeleteType = null;
+            return;
+        }
+
+        products = products.filter(p => p.id !== pendingDeleteId);
+        // Remover movimentos associados (opcional) - mantemos o comportamento original removendo também movimentos
+        movements = movements.filter(m => m.productId !== pendingDeleteId);
+        saveData(STORAGE_KEYS.products, products);
+        saveData(STORAGE_KEYS.movements, movements);
+        showToast(`Produto "${product?.name}" excluído`, 'warning');
+        renderProducts();
+    } else if (pendingDeleteType === 'category') {
+        const cat = getCategoryById(pendingDeleteId);
+        const hasProducts = products.some(p => p.categoryId === pendingDeleteId);
+        if (hasProducts) {
+            showToast('Remova todos os produtos desta categoria primeiro!', 'error');
+        } else {
+            categories = categories.filter(c => c.id !== pendingDeleteId);
+            saveData(STORAGE_KEYS.categories, categories);
+            showToast(`Categoria "${cat?.name}" excluída`, 'warning');
+            renderCategories();
+        }
+    }
+
+    pendingDeleteId = null;
+    pendingDeleteType = null;
+    closeModal('confirm-modal');
+}\n\nfunction renderReportLowStock() {
+    const tbody = document.getElementById('report-low-stock-body');
+    const lowProducts = products.filter(p => {
+        const status = getStockStatus(p);
+        return status.level !== 'ok';
+    }).sort((a, b) => a.quantity - b.quantity);
+
+    if (lowProducts.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state-sm"><i class="fa-solid fa-circle-check"></i> Todos os produtos com estoque adequado</div></td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = lowProducts.map(p => {
+        const cat = getCategoryById(p.categoryId);
+        const status = getStockStatus(p);
+        const deficit = Math.max(0, p.minStock - p.quantity);
+        const suggestion = deficit > 0 ? `Repor ${deficit} un` : 'Monitorar';
+
+        return `<tr>
+            <td class="fw-bold">${p.name}</td>
+            <td>${cat ? cat.icon + ' ' + cat.name : 'â€”'}</td>
+            <td class="${status.level === 'empty' || status.level === 'critical' ? 'text-danger' : 'text-warning'} fw-bold">${p.quantity}</td>
+            <td>${p.minStock}</td>
+            <td><span class="badge ${status.class}">${status.label}</span></td>
+            <td><span class="text-accent fw-bold">${suggestion}</span></td>
+        </tr>`;
+    }).join('');
+}\r\n\r\nfunction executeDelete() {
+    if (!pendingDeleteId || !pendingDeleteType) return;
+
+    if (pendingDeleteType === 'product') {
+        const product = getProductById(pendingDeleteId);
+        const movementsCount = movements.filter(m => m.productId === pendingDeleteId).length;
+        if (movementsCount > 0) {
+            showToast(`Não é possível excluir "${product?.name}" — existem ${movementsCount} movimentação(ões) associada(s).`, 'error');
+            closeModal('confirm-modal');
+            pendingDeleteId = null;
+            pendingDeleteType = null;
+            return;
+        }
+
+        products = products.filter(p => p.id !== pendingDeleteId);
+        // Remover movimentos associados (opcional) - mantemos o comportamento original removendo também movimentos
+        movements = movements.filter(m => m.productId !== pendingDeleteId);
+        saveData(STORAGE_KEYS.products, products);
+        saveData(STORAGE_KEYS.movements, movements);
+        showToast(`Produto "${product?.name}" excluído`, 'warning');
+        renderProducts();
+    } else if (pendingDeleteType === 'category') {
+        const cat = getCategoryById(pendingDeleteId);
+        const hasProducts = products.some(p => p.categoryId === pendingDeleteId);
+        if (hasProducts) {
+            showToast('Remova todos os produtos desta categoria primeiro!', 'error');
+        } else {
+            categories = categories.filter(c => c.id !== pendingDeleteId);
+            saveData(STORAGE_KEYS.categories, categories);
+            showToast(`Categoria "${cat?.name}" excluída`, 'warning');
+            renderCategories();
+        }
+    }
+
+    pendingDeleteId = null;
+    pendingDeleteType = null;
+    closeModal('confirm-modal');
+}\n\nfunction renderReportMostMoved() {
+    const container = document.getElementById('report-most-moved');
+    const movCounts = {};
+
+    movements.forEach(m => {
+        movCounts[m.productId] = (movCounts[m.productId] || 0) + m.quantity;
+    });
+
+    const sorted = Object.entries(movCounts)
+        .map(([id, count]) => ({ product: getProductById(id), count }))
+        .filter(item => item.product)
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 7);
+
+    if (sorted.length === 0) {
+        container.innerHTML = '<div class="chart-empty"><i class="fa-solid fa-fire"></i><span>Sem dados</span></div>';
+        return;
+    }
+
+    const maxCount = sorted[0].count;
+
+    container.innerHTML = sorted.map((item, i) => {
+        const pct = (item.count / maxCount) * 100;
+        return `<div class="most-moved-item">
+            <span class="most-moved-rank">#${i + 1}</span>
+            <div class="most-moved-info">
+                <div class="most-moved-name">${item.product.name}</div>
+                <div class="most-moved-bar-wrap">
+                    <div class="most-moved-bar" style="width:${pct}%"></div>
+                </div>
+            </div>
+            <span class="most-moved-count">${item.count} un</span>
+        </div>`;
+    }).join('');
+}\r\n\r\nfunction executeDelete() {
+    if (!pendingDeleteId || !pendingDeleteType) return;
+
+    if (pendingDeleteType === 'product') {
+        const product = getProductById(pendingDeleteId);
+        const movementsCount = movements.filter(m => m.productId === pendingDeleteId).length;
+        if (movementsCount > 0) {
+            showToast(`Não é possível excluir "${product?.name}" — existem ${movementsCount} movimentação(ões) associada(s).`, 'error');
+            closeModal('confirm-modal');
+            pendingDeleteId = null;
+            pendingDeleteType = null;
+            return;
+        }
+
+        products = products.filter(p => p.id !== pendingDeleteId);
+        // Remover movimentos associados (opcional) - mantemos o comportamento original removendo também movimentos
+        movements = movements.filter(m => m.productId !== pendingDeleteId);
+        saveData(STORAGE_KEYS.products, products);
+        saveData(STORAGE_KEYS.movements, movements);
+        showToast(`Produto "${product?.name}" excluído`, 'warning');
+        renderProducts();
+    } else if (pendingDeleteType === 'category') {
+        const cat = getCategoryById(pendingDeleteId);
+        const hasProducts = products.some(p => p.categoryId === pendingDeleteId);
+        if (hasProducts) {
+            showToast('Remova todos os produtos desta categoria primeiro!', 'error');
+        } else {
+            categories = categories.filter(c => c.id !== pendingDeleteId);
+            saveData(STORAGE_KEYS.categories, categories);
+            showToast(`Categoria "${cat?.name}" excluída`, 'warning');
+            renderCategories();
+        }
+    }
+
+    pendingDeleteId = null;
+    pendingDeleteType = null;
+    closeModal('confirm-modal');
+}\n\nfunction renderReportSummary() {
+    const container = document.getElementById('report-summary-stats');
+
+    const totalProducts = products.length;
+    const totalCategories = categories.length;
+    const totalUnits = products.reduce((s, p) => s + p.quantity, 0);
+    const stockValuePurchase = products.reduce((s, p) => s + (p.purchasePrice * p.quantity), 0);
+    const stockValueSale = products.reduce((s, p) => s + (p.salePrice * p.quantity), 0);
+    const potentialProfit = stockValueSale - stockValuePurchase;
+    const avgPrice = totalProducts > 0 ? stockValueSale / totalProducts : 0;
+    const totalMovements = movements.length;
+
+    container.innerHTML = `
+        <div class="stat-item"><span class="stat-label">Produtos Cadastrados</span><span class="stat-value">${totalProducts}</span></div>
+        <div class="stat-item"><span class="stat-label">Categorias</span><span class="stat-value">${totalCategories}</span></div>
+        <div class="stat-item"><span class="stat-label">Unidades em Estoque</span><span class="stat-value">${totalUnits.toLocaleString('pt-BR')}</span></div>
+        <div class="stat-item"><span class="stat-label">Valor Custo</span><span class="stat-value">${formatCurrency(stockValuePurchase)}</span></div>
+        <div class="stat-item"><span class="stat-label">Valor Venda</span><span class="stat-value text-accent">${formatCurrency(stockValueSale)}</span></div>
+        <div class="stat-item"><span class="stat-label">Lucro Potencial</span><span class="stat-value text-success">${formatCurrency(potentialProfit)}</span></div>
+        <div class="stat-item"><span class="stat-label">PreÃ§o MÃ©dio Venda</span><span class="stat-value">${formatCurrency(avgPrice)}</span></div>
+        <div class="stat-item"><span class="stat-label">Total MovimentaÃ§Ãµes</span><span class="stat-value">${totalMovements}</span></div>
+    `;
+}
+
+
+// ============ CSV EXPORT ============
+
+function executeDelete() {
+    if (!pendingDeleteId || !pendingDeleteType) return;
+
+    if (pendingDeleteType === 'product') {
+        const product = getProductById(pendingDeleteId);
+        const movementsCount = movements.filter(m => m.productId === pendingDeleteId).length;
+        if (movementsCount > 0) {
+            showToast(`Não é possível excluir "${product?.name}" — existem ${movementsCount} movimentação(ões) associada(s).`, 'error');
+            closeModal('confirm-modal');
+            pendingDeleteId = null;
+            pendingDeleteType = null;
+            return;
+        }
+
+        products = products.filter(p => p.id !== pendingDeleteId);
+        // Remover movimentos associados (opcional) - mantemos o comportamento original removendo também movimentos
+        movements = movements.filter(m => m.productId !== pendingDeleteId);
+        saveData(STORAGE_KEYS.products, products);
+        saveData(STORAGE_KEYS.movements, movements);
+        showToast(`Produto "${product?.name}" excluído`, 'warning');
+        renderProducts();
+    } else if (pendingDeleteType === 'category') {
+        const cat = getCategoryById(pendingDeleteId);
+        const hasProducts = products.some(p => p.categoryId === pendingDeleteId);
+        if (hasProducts) {
+            showToast('Remova todos os produtos desta categoria primeiro!', 'error');
+        } else {
+            categories = categories.filter(c => c.id !== pendingDeleteId);
+            saveData(STORAGE_KEYS.categories, categories);
+            showToast(`Categoria "${cat?.name}" excluída`, 'warning');
+            renderCategories();
+        }
+    }
+
+    pendingDeleteId = null;
+    pendingDeleteType = null;
+    closeModal('confirm-modal');
+}\n\nfunction exportCSV() {
+    const headers = ['Nome', 'Marca', 'Categoria', 'Volume', 'PreÃ§o Compra', 'PreÃ§o Venda', 'Estoque', 'Estoque MÃ­n', 'Fornecedor', 'Status'];
+    const rows = products.map(p => {
+        const cat = getCategoryById(p.categoryId);
+        const status = getStockStatus(p);
+        return [
+            p.name, p.brand || '', cat ? cat.name : '', p.volume,
+            p.purchasePrice.toFixed(2), p.salePrice.toFixed(2),
+            p.quantity, p.minStock, p.supplier || '', status.label
+        ];
+    });
+
+    const csvContent = [headers, ...rows].map(row =>
+        row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
+    ).join('\n');
+
+    const BOM = '\uFEFF';
+    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `bevstock_estoque_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+
+    showToast('RelatÃ³rio exportado com sucesso!', 'success');
+}
+
+
+// ============ NOTIFICATIONS ============
+
+function executeDelete() {
+    if (!pendingDeleteId || !pendingDeleteType) return;
+
+    if (pendingDeleteType === 'product') {
+        const product = getProductById(pendingDeleteId);
+        const movementsCount = movements.filter(m => m.productId === pendingDeleteId).length;
+        if (movementsCount > 0) {
+            showToast(`Não é possível excluir "${product?.name}" — existem ${movementsCount} movimentação(ões) associada(s).`, 'error');
+            closeModal('confirm-modal');
+            pendingDeleteId = null;
+            pendingDeleteType = null;
+            return;
+        }
+
+        products = products.filter(p => p.id !== pendingDeleteId);
+        // Remover movimentos associados (opcional) - mantemos o comportamento original removendo também movimentos
+        movements = movements.filter(m => m.productId !== pendingDeleteId);
+        saveData(STORAGE_KEYS.products, products);
+        saveData(STORAGE_KEYS.movements, movements);
+        showToast(`Produto "${product?.name}" excluído`, 'warning');
+        renderProducts();
+    } else if (pendingDeleteType === 'category') {
+        const cat = getCategoryById(pendingDeleteId);
+        const hasProducts = products.some(p => p.categoryId === pendingDeleteId);
+        if (hasProducts) {
+            showToast('Remova todos os produtos desta categoria primeiro!', 'error');
+        } else {
+            categories = categories.filter(c => c.id !== pendingDeleteId);
+            saveData(STORAGE_KEYS.categories, categories);
+            showToast(`Categoria "${cat?.name}" excluída`, 'warning');
+            renderCategories();
+        }
+    }
+
+    pendingDeleteId = null;
+    pendingDeleteType = null;
+    closeModal('confirm-modal');
+}\n\nfunction renderNotifications() {
+    const container = document.getElementById('notification-list');
+    const alertProducts = products.filter(p => {
+        const status = getStockStatus(p);
+        return status.level !== 'ok';
+    }).sort((a, b) => a.quantity - b.quantity);
+
+    if (alertProducts.length === 0) {
+        container.innerHTML = '<div class="notification-empty"><i class="fa-solid fa-circle-check"></i><span>Nenhum alerta ativo</span></div>';
+        return;
+    }
+
+    container.innerHTML = alertProducts.map(p => {
+        const status = getStockStatus(p);
+        const isCritical = status.level === 'critical' || status.level === 'empty';
+        const cat = getCategoryById(p.categoryId);
+
+        return `<div class="notification-item">
+            <div class="notif-icon ${isCritical ? 'critical' : 'warning'}">
+                <i class="fa-solid fa-${isCritical ? 'circle-exclamation' : 'triangle-exclamation'}"></i>
+            </div>
+            <div class="notif-info">
+                <div class="notif-title">${p.name}</div>
+                <div class="notif-desc">${cat ? cat.icon + ' ' + cat.name : ''} â€¢ Estoque: ${p.quantity} un (mÃ­n: ${p.minStock})</div>
+            </div>
+        </div>`;
+    }).join('');
+}\r\n\r\nfunction executeDelete() {
+    if (!pendingDeleteId || !pendingDeleteType) return;
+
+    if (pendingDeleteType === 'product') {
+        const product = getProductById(pendingDeleteId);
+        const movementsCount = movements.filter(m => m.productId === pendingDeleteId).length;
+        if (movementsCount > 0) {
+            showToast(`Não é possível excluir "${product?.name}" — existem ${movementsCount} movimentação(ões) associada(s).`, 'error');
+            closeModal('confirm-modal');
+            pendingDeleteId = null;
+            pendingDeleteType = null;
+            return;
+        }
+
+        products = products.filter(p => p.id !== pendingDeleteId);
+        // Remover movimentos associados (opcional) - mantemos o comportamento original removendo também movimentos
+        movements = movements.filter(m => m.productId !== pendingDeleteId);
+        saveData(STORAGE_KEYS.products, products);
+        saveData(STORAGE_KEYS.movements, movements);
+        showToast(`Produto "${product?.name}" excluído`, 'warning');
+        renderProducts();
+    } else if (pendingDeleteType === 'category') {
+        const cat = getCategoryById(pendingDeleteId);
+        const hasProducts = products.some(p => p.categoryId === pendingDeleteId);
+        if (hasProducts) {
+            showToast('Remova todos os produtos desta categoria primeiro!', 'error');
+        } else {
+            categories = categories.filter(c => c.id !== pendingDeleteId);
+            saveData(STORAGE_KEYS.categories, categories);
+            showToast(`Categoria "${cat?.name}" excluída`, 'warning');
+            renderCategories();
+        }
+    }
+
+    pendingDeleteId = null;
+    pendingDeleteType = null;
+    closeModal('confirm-modal');
+}\n\nfunction setupNotifications() {
+    const btn = document.getElementById('notification-btn');
+    const panel = document.getElementById('notification-panel');
+    const closeBtn = document.getElementById('close-notifications');
+
+    btn.addEventListener('click', () => {
+        panel.classList.toggle('open');
+        if (panel.classList.contains('open')) {
+            renderNotifications();
+        }
+    });
+
+    closeBtn.addEventListener('click', () => panel.classList.remove('open'));
+
+    document.addEventListener('click', (e) => {
+        if (!panel.contains(e.target) && !btn.contains(e.target)) {
+            panel.classList.remove('open');
+        }
+    });
+}
+
+
+// ============ GLOBAL SEARCH ============
+
+function executeDelete() {
+    if (!pendingDeleteId || !pendingDeleteType) return;
+
+    if (pendingDeleteType === 'product') {
+        const product = getProductById(pendingDeleteId);
+        const movementsCount = movements.filter(m => m.productId === pendingDeleteId).length;
+        if (movementsCount > 0) {
+            showToast(`Não é possível excluir "${product?.name}" — existem ${movementsCount} movimentação(ões) associada(s).`, 'error');
+            closeModal('confirm-modal');
+            pendingDeleteId = null;
+            pendingDeleteType = null;
+            return;
+        }
+
+        products = products.filter(p => p.id !== pendingDeleteId);
+        // Remover movimentos associados (opcional) - mantemos o comportamento original removendo também movimentos
+        movements = movements.filter(m => m.productId !== pendingDeleteId);
+        saveData(STORAGE_KEYS.products, products);
+        saveData(STORAGE_KEYS.movements, movements);
+        showToast(`Produto "${product?.name}" excluído`, 'warning');
+        renderProducts();
+    } else if (pendingDeleteType === 'category') {
+        const cat = getCategoryById(pendingDeleteId);
+        const hasProducts = products.some(p => p.categoryId === pendingDeleteId);
+        if (hasProducts) {
+            showToast('Remova todos os produtos desta categoria primeiro!', 'error');
+        } else {
+            categories = categories.filter(c => c.id !== pendingDeleteId);
+            saveData(STORAGE_KEYS.categories, categories);
+            showToast(`Categoria "${cat?.name}" excluída`, 'warning');
+            renderCategories();
+        }
+    }
+
+    pendingDeleteId = null;
+    pendingDeleteType = null;
+    closeModal('confirm-modal');
+}\n\nfunction setupGlobalSearch() {
+    const input = document.getElementById('global-search');
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && input.value.trim()) {
+            navigateTo('products');
+            document.getElementById('product-search').value = input.value.trim();
+            renderProducts();
+            input.value = '';
+        }
+    });
+}
+
+
+// ============ FILTER EVENT LISTENERS ============
+
+function executeDelete() {
+    if (!pendingDeleteId || !pendingDeleteType) return;
+
+    if (pendingDeleteType === 'product') {
+        const product = getProductById(pendingDeleteId);
+        const movementsCount = movements.filter(m => m.productId === pendingDeleteId).length;
+        if (movementsCount > 0) {
+            showToast(`Não é possível excluir "${product?.name}" — existem ${movementsCount} movimentação(ões) associada(s).`, 'error');
+            closeModal('confirm-modal');
+            pendingDeleteId = null;
+            pendingDeleteType = null;
+            return;
+        }
+
+        products = products.filter(p => p.id !== pendingDeleteId);
+        // Remover movimentos associados (opcional) - mantemos o comportamento original removendo também movimentos
+        movements = movements.filter(m => m.productId !== pendingDeleteId);
+        saveData(STORAGE_KEYS.products, products);
+        saveData(STORAGE_KEYS.movements, movements);
+        showToast(`Produto "${product?.name}" excluído`, 'warning');
+        renderProducts();
+    } else if (pendingDeleteType === 'category') {
+        const cat = getCategoryById(pendingDeleteId);
+        const hasProducts = products.some(p => p.categoryId === pendingDeleteId);
+        if (hasProducts) {
+            showToast('Remova todos os produtos desta categoria primeiro!', 'error');
+        } else {
+            categories = categories.filter(c => c.id !== pendingDeleteId);
+            saveData(STORAGE_KEYS.categories, categories);
+            showToast(`Categoria "${cat?.name}" excluída`, 'warning');
+            renderCategories();
+        }
+    }
+
+    pendingDeleteId = null;
+    pendingDeleteType = null;
+    closeModal('confirm-modal');
+}\n\nfunction setupFilters() {
+    // Product filters
+    ['product-search', 'product-filter-category', 'product-filter-stock'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener(el.tagName === 'SELECT' ? 'change' : 'input', () => renderProducts());
+    });
+
+    // Movement filters
+    ['movement-search', 'movement-filter-type', 'movement-date-start', 'movement-date-end'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener(el.tagName === 'SELECT' || el.type === 'date' ? 'change' : 'input', () => renderMovements());
+    });
+}
+
+
+// ============ INITIALIZATION ============
+
+function executeDelete() {
+    if (!pendingDeleteId || !pendingDeleteType) return;
+
+    if (pendingDeleteType === 'product') {
+        const product = getProductById(pendingDeleteId);
+        const movementsCount = movements.filter(m => m.productId === pendingDeleteId).length;
+        if (movementsCount > 0) {
+            showToast(`Não é possível excluir "${product?.name}" — existem ${movementsCount} movimentação(ões) associada(s).`, 'error');
+            closeModal('confirm-modal');
+            pendingDeleteId = null;
+            pendingDeleteType = null;
+            return;
+        }
+
+        products = products.filter(p => p.id !== pendingDeleteId);
+        // Remover movimentos associados (opcional) - mantemos o comportamento original removendo também movimentos
+        movements = movements.filter(m => m.productId !== pendingDeleteId);
+        saveData(STORAGE_KEYS.products, products);
+        saveData(STORAGE_KEYS.movements, movements);
+        showToast(`Produto "${product?.name}" excluído`, 'warning');
+        renderProducts();
+    } else if (pendingDeleteType === 'category') {
+        const cat = getCategoryById(pendingDeleteId);
+        const hasProducts = products.some(p => p.categoryId === pendingDeleteId);
+        if (hasProducts) {
+            showToast('Remova todos os produtos desta categoria primeiro!', 'error');
+        } else {
+            categories = categories.filter(c => c.id !== pendingDeleteId);
+            saveData(STORAGE_KEYS.categories, categories);
+            showToast(`Categoria "${cat?.name}" excluída`, 'warning');
+            renderCategories();
+        }
+    }
+
+    pendingDeleteId = null;
+    pendingDeleteType = null;
+    closeModal('confirm-modal');
+}\n\nfunction updateDateDisplay() {
+    const el = document.getElementById('current-date');
+    if (el) {
+        el.textContent = new Date().toLocaleDateString('pt-BR', {
+            weekday: 'short', day: '2-digit', month: 'short', year: 'numeric'
+        });
+    }
+}\r\n\r\nfunction executeDelete() {
+    if (!pendingDeleteId || !pendingDeleteType) return;
+
+    if (pendingDeleteType === 'product') {
+        const product = getProductById(pendingDeleteId);
+        const movementsCount = movements.filter(m => m.productId === pendingDeleteId).length;
+        if (movementsCount > 0) {
+            showToast(`Não é possível excluir "${product?.name}" — existem ${movementsCount} movimentação(ões) associada(s).`, 'error');
+            closeModal('confirm-modal');
+            pendingDeleteId = null;
+            pendingDeleteType = null;
+            return;
+        }
+
+        products = products.filter(p => p.id !== pendingDeleteId);
+        // Remover movimentos associados (opcional) - mantemos o comportamento original removendo também movimentos
+        movements = movements.filter(m => m.productId !== pendingDeleteId);
+        saveData(STORAGE_KEYS.products, products);
+        saveData(STORAGE_KEYS.movements, movements);
+        showToast(`Produto "${product?.name}" excluído`, 'warning');
+        renderProducts();
+    } else if (pendingDeleteType === 'category') {
+        const cat = getCategoryById(pendingDeleteId);
+        const hasProducts = products.some(p => p.categoryId === pendingDeleteId);
+        if (hasProducts) {
+            showToast('Remova todos os produtos desta categoria primeiro!', 'error');
+        } else {
+            categories = categories.filter(c => c.id !== pendingDeleteId);
+            saveData(STORAGE_KEYS.categories, categories);
+            showToast(`Categoria "${cat?.name}" excluída`, 'warning');
+            renderCategories();
+        }
+    }
+
+    pendingDeleteId = null;
+    pendingDeleteType = null;
+    closeModal('confirm-modal');
+}\n\nfunction init() {
+    // Setup core UI
+    setupSidebar();
+    setupNavigation();
+    setupModalCloseHandlers();
+    setupNotifications();
+    setupGlobalSearch();
+    setupFilters();
+    updateDateDisplay();
+
+    // Form submissions
+    document.getElementById('product-form').addEventListener('submit', saveProduct);
+    document.getElementById('movement-form').addEventListener('submit', saveMovement);
+    document.getElementById('category-form').addEventListener('submit', saveCategory);
+
+    // Button handlers
+    document.getElementById('btn-add-product').addEventListener('click', () => openProductModal());
+    document.getElementById('btn-add-category').addEventListener('click', () => openCategoryModal());
+    document.getElementById('btn-new-entry').addEventListener('click', () => openMovementModal('entry'));
+    document.getElementById('btn-new-exit').addEventListener('click', () => openMovementModal('exit'));
+    document.getElementById('btn-export-csv').addEventListener('click', exportCSV);
+    document.getElementById('confirm-delete-btn').addEventListener('click', executeDelete);
+
+    // Render initial page
+    renderDashboard();
+
+    // Keyboard shortcut: Escape closes modals
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            document.querySelectorAll('.modal-overlay.open').forEach(m => closeModal(m.id));
+            document.getElementById('notification-panel').classList.remove('open');
+        }
+    });
+}
+
+// Global function executeDelete() {
+    if (!pendingDeleteId || !pendingDeleteType) return;
+
+    if (pendingDeleteType === 'product') {
+        const product = getProductById(pendingDeleteId);
+        const movementsCount = movements.filter(m => m.productId === pendingDeleteId).length;
+        if (movementsCount > 0) {
+            showToast(`Não é possível excluir "${product?.name}" — existem ${movementsCount} movimentação(ões) associada(s).`, 'error');
+            closeModal('confirm-modal');
+            pendingDeleteId = null;
+            pendingDeleteType = null;
+            return;
+        }
+
+        products = products.filter(p => p.id !== pendingDeleteId);
+        // Remover movimentos associados (opcional) - mantemos o comportamento original removendo também movimentos
+        movements = movements.filter(m => m.productId !== pendingDeleteId);
+        saveData(STORAGE_KEYS.products, products);
+        saveData(STORAGE_KEYS.movements, movements);
+        showToast(`Produto "${product?.name}" excluído`, 'warning');
+        renderProducts();
+    } else if (pendingDeleteType === 'category') {
+        const cat = getCategoryById(pendingDeleteId);
+        const hasProducts = products.some(p => p.categoryId === pendingDeleteId);
+        if (hasProducts) {
+            showToast('Remova todos os produtos desta categoria primeiro!', 'error');
+        } else {
+            categories = categories.filter(c => c.id !== pendingDeleteId);
+            saveData(STORAGE_KEYS.categories, categories);
+            showToast(`Categoria "${cat?.name}" excluída`, 'warning');
+            renderCategories();
+        }
+    }
+
+    pendingDeleteId = null;
+    pendingDeleteType = null;
+    closeModal('confirm-modal');
+}nctions for inline onclick handlers
+window.editProduct = editProduct;
+window.confirmDeleteProduct = confirmDeleteProduct;
+window.openQuickEntry = openQuickEntry;
+window.editCategory = editCategory;
+window.confirmDeleteCategory = confirmDeleteCategory;
+
+document.addEventListener('DOMContentLoaded', init);
+
+
+
+
+
+
+
+
