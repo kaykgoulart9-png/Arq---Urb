@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Arq & Urb – Agência acadêmica de Arquitetura, Urbanismo e Comunicação. Projetando ideias, transformando espaços." />
+  <meta name="keywords" content="arquitetura, urbanismo, design gráfico, branding, comunicação digital, produção audiovisual" />
+  <meta property="og:title" content="Arq & Urb | Projetando ideias, transformando espaços" />
+  <meta property="og:description" content="Plataforma digital da agência Arq & Urb – portfólio de projetos acadêmicos e institucionais." />
+  <meta property="og:type" content="website" />
+  <title>Arq & Urb | Projetando ideias, transformando espaços</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ========== NAVBAR ========== -->
+  <nav class="navbar" id="navbar" role="navigation" aria-label="Menu principal">
+    <div class="nav-container">
+      <a href="#home" class="nav-logo" aria-label="Arq & Urb - Página inicial">
+        <span class="logo-icon">⬡</span>
+        <span class="logo-text">Arq <span class="logo-amp">&</span> Urb</span>
+      </a>
+      <ul class="nav-links" id="navLinks" role="list">
+        <li><a href="#sobre" class="nav-link">Quem Somos</a></li>
+        <li><a href="#metodologia" class="nav-link">Metodologia</a></li>
+        <li><a href="#servicos" class="nav-link">Serviços</a></li>
+        <li><a href="#cases" class="nav-link">Cases</a></li>
+        <li><a href="#galeria" class="nav-link">Galeria</a></li>
+        <li><a href="#equipe" class="nav-link">Equipe</a></li>
+        <li><a href="#contato" class="nav-link nav-cta">Contato</a></li>
+      </ul>
+      <div class="nav-actions">
+        <button class="dark-mode-toggle" id="darkModeToggle" aria-label="Alternar modo escuro" title="Modo Escuro">
+          <span class="toggle-icon" id="toggleIcon">🌙</span>
+        </button>
+        <button class="hamburger" id="hamburger" aria-label="Abrir menu" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ========== HERO ========== -->
+  <section class="hero" id="home" aria-label="Seção principal">
+    <div class="hero-bg">
+      <div class="hero-grid"></div>
+      <div class="hero-orb hero-orb-1"></div>
+      <div class="hero-orb hero-orb-2"></div>
+      <div class="hero-orb hero-orb-3"></div>
+    </div>
+    <div class="hero-content">
+      <div class="hero-badge reveal">
+        <span>✦</span> Agência Acadêmica <span>✦</span>
+      </div>
+      <h1 class="hero-title reveal">
+        <span class="title-line">Arq</span>
+        <span class="title-amp">&amp;</span>
+        <span class="title-line">Urb</span>
+      </h1>
+      <p class="hero-slogan reveal">Projetando ideias, transformando espaços.</p>
+      <p class="hero-desc reveal">
+        Uma agência multidisciplinar que une Arquitetura, Urbanismo e Comunicação<br />
+        para criar experiências que deixam marca no espaço e na memória.
+      </p>
+      <div class="hero-ctas reveal">
+        <a href="#galeria" class="btn btn-primary" id="btnVerProjetos">
+          <span>Ver Projetos</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+        <a href="#contato" class="btn btn-outline" id="btnContato">
+          <span>Fale Conosco</span>
+        </a>
+      </div>
+      <div class="hero-scroll-indicator reveal">
+        <div class="scroll-line"></div>
+        <span>Scroll</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== QUEM SOMOS ========== -->
+  <section class="section" id="sobre" aria-label="Quem somos">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="section-tag">Nossa História</span>
+        <h2 class="section-title">Quem Somos</h2>
+        <p class="section-subtitle">
+          Nascemos da convergência entre disciplinas criativas e técnicas, unidos pela
+          paixão de transformar conceitos em espaços e ideias em marcas.
+        </p>
+      </div>
+
+      <div class="about-grid">
+        <div class="about-text reveal">
+          <div class="about-block">
+            <div class="about-block-icon">🎯</div>
+            <div>
+              <h3>Missão</h3>
+              <p>Desenvolver soluções criativas e técnicas de excelência em Arquitetura, Urbanismo e Comunicação, gerando valor real para pessoas e territórios através de uma abordagem colaborativa e inovadora.</p>
+            </div>
+          </div>
+          <div class="about-block">
+            <div class="about-block-icon">🔭</div>
+            <div>
+              <h3>Visão</h3>
+              <p>Ser referência nacional em agências multidisciplinares acadêmicas, reconhecida pela qualidade técnica, pelo impacto social dos projetos e pela formação de profissionais completos.</p>
+            </div>
+          </div>
+          <div class="about-block">
+            <div class="about-block-icon">💎</div>
+            <div>
+              <h3>Valores</h3>
+              <p>Ética, rigor técnico, diversidade de perspectivas, compromisso com a sustentabilidade e entrega de resultados que superam expectativas.</p>
+            </div>
+          </div>
+        </div>
+        <div class="pillars-grid reveal">
+          <div class="pillar-card">
+            <div class="pillar-icon">📐</div>
+            <h4>Planejamento</h4>
+            <p>Cada projeto começa com análise estratégica profunda antes de qualquer linha traçada.</p>
+          </div>
+          <div class="pillar-card">
+            <div class="pillar-icon">💡</div>
+            <h4>Criatividade</h4>
+            <p>Soluções originais que unem estética e funcionalidade em perfeita harmonia.</p>
+          </div>
+          <div class="pillar-card">
+            <div class="pillar-icon">🌿</div>
+            <h4>Sustentabilidade</h4>
+            <p>Projetos que respeitam o meio ambiente e pensam nas gerações futuras.</p>
+          </div>
+          <div class="pillar-card">
+            <div class="pillar-icon">🤝</div>
+            <h4>Colaboração</h4>
+            <p>Diversidade de saberes trabalhando em sinergia para resultados extraordinários.</p>
+          </div>
+          <div class="pillar-card pillar-center">
+            <div class="pillar-icon">🚀</div>
+            <h4>Inovação</h4>
+            <p>Tecnologia e criatividade na vanguarda de cada entrega.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== METODOLOGIA ========== -->
+  <section class="section section-dark" id="metodologia" aria-label="Metodologia de trabalho">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="section-tag">Como Trabalhamos</span>
+        <h2 class="section-title">Nossa Metodologia</h2>
+        <p class="section-subtitle">
+          Um processo criativo estruturado em quatro etapas que garante excelência em cada entrega.
+        </p>
+      </div>
+      <div class="timeline">
+        <div class="timeline-line"></div>
+        <div class="timeline-step reveal" data-step="01">
+          <div class="step-dot"></div>
+          <div class="step-card">
+            <div class="step-number">01</div>
+            <div class="step-icon">🔍</div>
+            <h3>Pesquisa</h3>
+            <p>Imersão profunda no contexto do projeto — análise de mercado, público-alvo, referências e tendências que embasam decisões criativas fundamentadas.</p>
+          </div>
+        </div>
+        <div class="timeline-step reveal" data-step="02">
+          <div class="step-dot"></div>
+          <div class="step-card">
+            <div class="step-number">02</div>
+            <div class="step-icon">📋</div>
+            <h3>Planejamento</h3>
+            <p>Definição de estratégia, cronograma, responsabilidades e métricas de sucesso. A bússola que orienta todo o desenvolvimento criativo subsequente.</p>
+          </div>
+        </div>
+        <div class="timeline-step reveal" data-step="03">
+          <div class="step-dot"></div>
+          <div class="step-card">
+            <div class="step-number">03</div>
+            <div class="step-icon">🎨</div>
+            <h3>Desenvolvimento Criativo</h3>
+            <p>Materialização das ideias em conceitos visuais, espaciais e comunicacionais. Iteração constante com revisões e refinamentos até atingir a excelência.</p>
+          </div>
+        </div>
+        <div class="timeline-step reveal" data-step="04">
+          <div class="step-dot"></div>
+          <div class="step-card">
+            <div class="step-number">04</div>
+            <div class="step-icon">📊</div>
+            <h3>Execução & Resultados</h3>
+            <p>Entrega final com documentação completa e acompanhamento pós-projeto. Análise dos resultados obtidos para aprimorar continuamente nossa metodologia.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== SERVIÇOS ========== -->
+  <section class="section" id="servicos" aria-label="Portfólio de serviços">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="section-tag">O Que Fazemos</span>
+        <h2 class="section-title">Portfólio de Serviços</h2>
+        <p class="section-subtitle">
+          Seis frentes de atuação integradas que cobrem todo o ecossistema criativo e técnico de um projeto completo.
+        </p>
+      </div>
+      <div class="services-grid">
+        <div class="service-card reveal" id="servArquitetura">
+          <div class="service-icon-wrap">
+            <div class="service-icon">🏛️</div>
+          </div>
+          <h3>Arquitetura</h3>
+          <p>Projetos arquitetônicos que integram funcionalidade, estética e identidade — do esboço inicial à execução detalhada.</p>
+          <div class="service-line"></div>
+        </div>
+        <div class="service-card reveal" id="servUrbanismo">
+          <div class="service-icon-wrap">
+            <div class="service-icon">🌆</div>
+          </div>
+          <h3>Urbanismo</h3>
+          <p>Planejamento urbano com visão sistêmica, pensando na mobilidade, no espaço público e na qualidade de vida coletiva.</p>
+          <div class="service-line"></div>
+        </div>
+        <div class="service-card reveal" id="servDesign">
+          <div class="service-icon-wrap">
+            <div class="service-icon">✏️</div>
+          </div>
+          <h3>Design Gráfico</h3>
+          <p>Identidades visuais, materiais impressos e peças digitais criados com precisão técnica e sensibilidade estética.</p>
+          <div class="service-line"></div>
+        </div>
+        <div class="service-card reveal" id="servBranding">
+          <div class="service-icon-wrap">
+            <div class="service-icon">💼</div>
+          </div>
+          <h3>Branding</h3>
+          <p>Construção estratégica de marcas memoráveis — naming, posicionamento, identidade e guias de uso completos.</p>
+          <div class="service-line"></div>
+        </div>
+        <div class="service-card reveal" id="servDigital">
+          <div class="service-icon-wrap">
+            <div class="service-icon">📱</div>
+          </div>
+          <h3>Comunicação Digital</h3>
+          <p>Estratégias de presença online, gestão de conteúdo e campanhas que conectam marcas aos seus públicos.</p>
+          <div class="service-line"></div>
+        </div>
+        <div class="service-card reveal" id="servAudiovisual">
+          <div class="service-icon-wrap">
+            <div class="service-icon">🎬</div>
+          </div>
+          <h3>Produção Audiovisual</h3>
+          <p>Vídeos, fotografia e conteúdo multimídia com narrativas visuais poderosas e alta qualidade de produção.</p>
+          <div class="service-line"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== INDICADORES ========== -->
+  <section class="section section-accent" id="indicadores" aria-label="Indicadores de resultado">
+    <div class="container">
+      <div class="stats-grid">
+        <div class="stat-card reveal" id="statProjetos">
+          <div class="stat-number" data-target="48">0</div>
+          <div class="stat-label">Projetos Desenvolvidos</div>
+          <div class="stat-bar"><div class="stat-bar-fill" style="width:85%"></div></div>
+        </div>
+        <div class="stat-card reveal" id="statCampanhas">
+          <div class="stat-number" data-target="32">0</div>
+          <div class="stat-label">Campanhas Criadas</div>
+          <div class="stat-bar"><div class="stat-bar-fill" style="width:70%"></div></div>
+        </div>
+        <div class="stat-card reveal" id="statPecas">
+          <div class="stat-number" data-target="210">0</div>
+          <div class="stat-label">Peças Publicitárias</div>
+          <div class="stat-bar"><div class="stat-bar-fill" style="width:95%"></div></div>
+        </div>
+        <div class="stat-card reveal" id="statAreas">
+          <div class="stat-number" data-target="6">0</div>
+          <div class="stat-label">Áreas de Atuação</div>
+          <div class="stat-bar"><div class="stat-bar-fill" style="width:100%"></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== CASES ========== -->
+  <section class="section" id="cases" aria-label="Casos de sucesso">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="section-tag">Resultados Reais</span>
+        <h2 class="section-title">Cases de Sucesso</h2>
+        <p class="section-subtitle">
+          Projetos que demonstram como nossa metodologia gera resultados concretos e mensuráveis.
+        </p>
+      </div>
+      <div class="cases-grid">
+
+        <!-- Case 1 -->
+        <div class="case-card reveal" id="case1">
+          <div class="case-header">
+            <div class="case-tag">Urbanismo</div>
+            <h3 class="case-title">Revitalização Praça Central</h3>
+          </div>
+          <div class="case-body">
+            <div class="case-item">
+              <div class="case-label">
+                <span class="case-dot"></span> Desafio Encontrado
+              </div>
+              <p>Praça pública degradada, sem identidade visual e com baixíssima utilização pela comunidade local, gerando insegurança e abandono da área central.</p>
+            </div>
+            <div class="case-item">
+              <div class="case-label">
+                <span class="case-dot"></span> Estratégia Criativa
+              </div>
+              <p>Redesenho completo com mobiliário urbano sustentável, jardins sensoriais e espaços multiuso para diferentes faixas etárias, integrando arte urbana local.</p>
+            </div>
+            <div class="case-item">
+              <div class="case-label">
+                <span class="case-dot"></span> Estratégia de Mídia
+              </div>
+              <p>Campanha de engajamento comunitário via redes sociais e apresentações nas escolas do entorno para mobilizar a população e legitimar o projeto.</p>
+            </div>
+            <div class="case-result">
+              <div class="case-label">
+                <span class="case-dot case-dot-green"></span> Resultado Obtido
+              </div>
+              <p>Aprovação unânime da banca avaliadora. Projeto selecionado como referência para estudos de caso nas disciplinas de Planejamento Urbano.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Case 2 -->
+        <div class="case-card reveal" id="case2">
+          <div class="case-header">
+            <div class="case-tag">Branding</div>
+            <h3 class="case-title">Identidade Visual EcoMarket</h3>
+          </div>
+          <div class="case-body">
+            <div class="case-item">
+              <div class="case-label">
+                <span class="case-dot"></span> Desafio Encontrado
+              </div>
+              <p>Startup de produtos orgânicos sem identidade visual consolidada, dificultando a percepção de valor e a diferenciação frente aos concorrentes no mercado.</p>
+            </div>
+            <div class="case-item">
+              <div class="case-label">
+                <span class="case-dot"></span> Estratégia Criativa
+              </div>
+              <p>Desenvolvimento de marca completa com logotipo biofílico, paleta cromática terrosa e sistema de embalagens sustentáveis com design minimalista e apelo premium.</p>
+            </div>
+            <div class="case-item">
+              <div class="case-label">
+                <span class="case-dot"></span> Estratégia de Mídia
+              </div>
+              <p>Manual de marca aplicado a todos os pontos de contato digitais e físicos, com guia de conteúdo para Instagram e catálogo de produtos visual.</p>
+            </div>
+            <div class="case-result">
+              <div class="case-label">
+                <span class="case-dot case-dot-green"></span> Resultado Obtido
+              </div>
+              <p>Nota máxima na disciplina de Branding. Projeto convidado para exposição em feira acadêmica regional com premiação especial de mérito criativo.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Case 3 -->
+        <div class="case-card reveal" id="case3">
+          <div class="case-header">
+            <div class="case-tag">Audiovisual</div>
+            <h3 class="case-title">Campanha Cultura Viva</h3>
+          </div>
+          <div class="case-body">
+            <div class="case-item">
+              <div class="case-label">
+                <span class="case-dot"></span> Desafio Encontrado
+              </div>
+              <p>Centro cultural municipal com baixíssima frequência de público jovem e ausência de estratégia de comunicação voltada para essa faixa etária.</p>
+            </div>
+            <div class="case-item">
+              <div class="case-label">
+                <span class="case-dot"></span> Estratégia Criativa
+              </div>
+              <p>Série de vídeos curtos (reels) com linguagem jovem, mostrando os bastidores das atrações e depoimentos de artistas locais com edição dinâmica e trilha contemporânea.</p>
+            </div>
+            <div class="case-item">
+              <div class="case-label">
+                <span class="case-dot"></span> Estratégia de Mídia
+              </div>
+              <p>Distribuição multiplataforma com foco em Instagram e TikTok, impulsionamento pago segmentado e parceria com influenciadores culturais locais.</p>
+            </div>
+            <div class="case-result">
+              <div class="case-label">
+                <span class="case-dot case-dot-green"></span> Resultado Obtido
+              </div>
+              <p>Aumento simulado de 340% no engajamento digital e reconhecimento como melhor projeto de Comunicação Digital do semestre pela banca avaliadora.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== GALERIA ========== -->
+  <section class="section section-dark" id="galeria" aria-label="Galeria de projetos">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="section-tag">Trabalhos Acadêmicos</span>
+        <h2 class="section-title">Galeria de Projetos</h2>
+        <p class="section-subtitle">
+          Uma seleção dos melhores trabalhos desenvolvidos ao longo das disciplinas de formação.
+        </p>
+      </div>
+      <div class="gallery-filter reveal">
+        <button class="filter-btn active" data-filter="all" id="filterAll">Todos</button>
+        <button class="filter-btn" data-filter="arq" id="filterArq">Arquitetura</button>
+        <button class="filter-btn" data-filter="urb" id="filterUrb">Urbanismo</button>
+        <button class="filter-btn" data-filter="design" id="filterDesign">Design</button>
+        <button class="filter-btn" data-filter="digital" id="filterDigital">Digital</button>
+      </div>
+      <div class="gallery-grid" id="galleryGrid">
+        <div class="gallery-item reveal" data-category="arq" id="gal1">
+          <div class="gallery-img" style="background: linear-gradient(135deg, #1F3A5F 0%, #2d5291 100%);">
+            <div class="gallery-img-icon">🏛️</div>
+          </div>
+          <div class="gallery-overlay">
+            <div class="gallery-info">
+              <span class="gallery-tag">Arquitetura</span>
+              <h4>Casa Bioclimática</h4>
+              <p>Projeto residencial com captação solar passiva e ventilação cruzada natural.</p>
+            </div>
+          </div>
+        </div>
+        <div class="gallery-item reveal gallery-item-large" data-category="urb" id="gal2">
+          <div class="gallery-img" style="background: linear-gradient(135deg, #5C8A4B 0%, #3d6b32 100%);">
+            <div class="gallery-img-icon">🌆</div>
+          </div>
+          <div class="gallery-overlay">
+            <div class="gallery-info">
+              <span class="gallery-tag">Urbanismo</span>
+              <h4>Plano Diretor Microurbano</h4>
+              <p>Requalificação de bairro histórico com preservação da memória local e modernização da infraestrutura.</p>
+            </div>
+          </div>
+        </div>
+        <div class="gallery-item reveal" data-category="design" id="gal3">
+          <div class="gallery-img" style="background: linear-gradient(135deg, #707070 0%, #4a4a4a 100%);">
+            <div class="gallery-img-icon">✏️</div>
+          </div>
+          <div class="gallery-overlay">
+            <div class="gallery-info">
+              <span class="gallery-tag">Design Gráfico</span>
+              <h4>Identidade Visual NGO Verde</h4>
+              <p>Sistema de identidade completo para organização ambiental com guia de aplicações.</p>
+            </div>
+          </div>
+        </div>
+        <div class="gallery-item reveal" data-category="design" id="gal4">
+          <div class="gallery-img" style="background: linear-gradient(135deg, #1F3A5F 0%, #5C8A4B 100%);">
+            <div class="gallery-img-icon">💼</div>
+          </div>
+          <div class="gallery-overlay">
+            <div class="gallery-info">
+              <span class="gallery-tag">Branding</span>
+              <h4>Marca Café Arquiteto</h4>
+              <p>Branding completo para cafeteria temática com conceito arquitetônico brutalista.</p>
+            </div>
+          </div>
+        </div>
+        <div class="gallery-item reveal gallery-item-tall" data-category="arq" id="gal5">
+          <div class="gallery-img" style="background: linear-gradient(135deg, #2d5291 0%, #1a2f4a 100%);">
+            <div class="gallery-img-icon">🏗️</div>
+          </div>
+          <div class="gallery-overlay">
+            <div class="gallery-info">
+              <span class="gallery-tag">Arquitetura</span>
+              <h4>Centro Cultural Módulo</h4>
+              <p>Equipamento cultural com estrutura modular adaptável e fachada verde integrada.</p>
+            </div>
+          </div>
+        </div>
+        <div class="gallery-item reveal" data-category="digital" id="gal6">
+          <div class="gallery-img" style="background: linear-gradient(135deg, #5C8A4B 0%, #1F3A5F 100%);">
+            <div class="gallery-img-icon">📱</div>
+          </div>
+          <div class="gallery-overlay">
+            <div class="gallery-info">
+              <span class="gallery-tag">Digital</span>
+              <h4>App UrbMap</h4>
+              <p>Protótipo de aplicativo para mapeamento participativo de problemas urbanos.</p>
+            </div>
+          </div>
+        </div>
+        <div class="gallery-item reveal" data-category="urb" id="gal7">
+          <div class="gallery-img" style="background: linear-gradient(135deg, #3d6b32 0%, #5C8A4B 100%);">
+            <div class="gallery-img-icon">🌳</div>
+          </div>
+          <div class="gallery-overlay">
+            <div class="gallery-info">
+              <span class="gallery-tag">Urbanismo</span>
+              <h4>Corredor Verde Urbano</h4>
+              <p>Proposta de arborização e criação de percurso cicloviário em via arterial.</p>
+            </div>
+          </div>
+        </div>
+        <div class="gallery-item reveal" data-category="digital" id="gal8">
+          <div class="gallery-img" style="background: linear-gradient(135deg, #1a2f4a 0%, #2d5291 100%);">
+            <div class="gallery-img-icon">🎬</div>
+          </div>
+          <div class="gallery-overlay">
+            <div class="gallery-info">
+              <span class="gallery-tag">Audiovisual</span>
+              <h4>Documentário Periferias</h4>
+              <p>Curta-metragem documental sobre processos de autoconstrução em comunidades periféricas.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== EQUIPE ========== -->
+  <section class="section" id="equipe" aria-label="Equipe">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="section-tag">Os Criadores</span>
+        <h2 class="section-title">Nossa Equipe</h2>
+        <p class="section-subtitle">
+          Profissionais em formação com perfis complementares, unidos pela mesma paixão de criar impacto através do design e da arquitetura.
+        </p>
+      </div>
+      <div class="team-grid">
+        <div class="team-card reveal" id="teamMember1">
+          <div class="team-photo">
+            <div class="team-avatar">A</div>
+          </div>
+          <div class="team-info">
+            <h4>Ana Beatriz Santos</h4>
+            <span class="team-role">Diretora de Criação</span>
+            <p class="team-bio">Especialista em identidade visual e branding. Lidera os processos criativos com visão estratégica e sensibilidade estética.</p>
+            <div class="team-tags">
+              <span>Branding</span>
+              <span>Design</span>
+            </div>
+          </div>
+        </div>
+        <div class="team-card reveal" id="teamMember2">
+          <div class="team-photo">
+            <div class="team-avatar" style="background: var(--green);">C</div>
+          </div>
+          <div class="team-info">
+            <h4>Carlos Eduardo Lima</h4>
+            <span class="team-role">Arquiteto Líder</span>
+            <p class="team-bio">Responsável pelos projetos arquitetônicos e urbanísticos. Combina rigor técnico com criatividade na concepção espacial.</p>
+            <div class="team-tags">
+              <span>Arquitetura</span>
+              <span>Urbanismo</span>
+            </div>
+          </div>
+        </div>
+        <div class="team-card reveal" id="teamMember3">
+          <div class="team-photo">
+            <div class="team-avatar" style="background: #707070;">M</div>
+          </div>
+          <div class="team-info">
+            <h4>Mariana Oliveira</h4>
+            <span class="team-role">Estrategista de Comunicação</span>
+            <p class="team-bio">Desenvolve estratégias de comunicação digital e planeja campanhas que conectam projetos ao público de maneira eficaz e criativa.</p>
+            <div class="team-tags">
+              <span>Digital</span>
+              <span>Mídia</span>
+            </div>
+          </div>
+        </div>
+        <div class="team-card reveal" id="teamMember4">
+          <div class="team-photo">
+            <div class="team-avatar" style="background: #2d5291;">R</div>
+          </div>
+          <div class="team-info">
+            <h4>Rafael Costa Mendes</h4>
+            <span class="team-role">Produtor Audiovisual</span>
+            <p class="team-bio">Transforma conceitos em narrativas visuais impactantes. Especializado em produção de vídeo, fotografia e motion design.</p>
+            <div class="team-tags">
+              <span>Audiovisual</span>
+              <span>Motion</span>
+            </div>
+          </div>
+        </div>
+        <div class="team-card reveal" id="teamMember5">
+          <div class="team-photo">
+            <div class="team-avatar" style="background: #3d6b32;">J</div>
+          </div>
+          <div class="team-info">
+            <h4>Julia Ferreira Alves</h4>
+            <span class="team-role">Urbanista & Pesquisadora</span>
+            <p class="team-bio">Conduz as pesquisas de campo e análises urbanas. Traz profundidade teórica e metodológica a todos os projetos da agência.</p>
+            <div class="team-tags">
+              <span>Pesquisa</span>
+              <span>Urbanismo</span>
+            </div>
+          </div>
+        </div>
+        <div class="team-card reveal" id="teamMember6">
+          <div class="team-photo">
+            <div class="team-avatar" style="background: #5C8A4B;">L</div>
+          </div>
+          <div class="team-info">
+            <h4>Lucas Henrique Brito</h4>
+            <span class="team-role">Dev & Gestor de Projetos</span>
+            <p class="team-bio">Garante que tecnologia e design caminhem juntos. Responsável pelo desenvolvimento digital e pela gestão operacional dos projetos.</p>
+            <div class="team-tags">
+              <span>Tech</span>
+              <span>Gestão</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== CONTATO ========== -->
+  <section class="section section-dark" id="contato" aria-label="Contato">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="section-tag">Fale Conosco</span>
+        <h2 class="section-title">Entre em Contato</h2>
+        <p class="section-subtitle">
+          Tem um projeto em mente ou deseja colaborar conosco? Adoraríamos ouvir sobre suas ideias.
+        </p>
+      </div>
+      <div class="contact-wrapper">
+        <div class="contact-info reveal">
+          <div class="contact-info-block">
+            <div class="contact-info-icon">📧</div>
+            <div>
+              <h4>E-mail</h4>
+              <p>contato@arqurb.com.br</p>
+            </div>
+          </div>
+          <div class="contact-info-block">
+            <div class="contact-info-icon">📍</div>
+            <div>
+              <h4>Localização</h4>
+              <p>Brasil — Atuação Nacional</p>
+            </div>
+          </div>
+          <div class="contact-info-block">
+            <div class="contact-info-icon">🎓</div>
+            <div>
+              <h4>Vínculo</h4>
+              <p>Agência Acadêmica — Cursos de Arquitetura & Comunicação</p>
+            </div>
+          </div>
+          <div class="contact-social">
+            <h4>Redes Sociais</h4>
+            <div class="social-buttons">
+              <a href="https://wa.me/5500000000000" class="social-btn social-whatsapp" id="btnWhatsapp" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
+                <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                <span>WhatsApp</span>
+              </a>
+              <a href="https://linkedin.com/company/arqurb" class="social-btn social-linkedin" id="btnLinkedin" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+                <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                <span>LinkedIn</span>
+              </a>
+              <a href="https://github.com/arqurb" class="social-btn social-github" id="btnGithub" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+                <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+                <span>GitHub</span>
+              </a>
+            </div>
+          </div>
+        </div>
+        <form class="contact-form reveal" id="contactForm" novalidate>
+          <div class="form-group">
+            <label for="contactName">Nome Completo *</label>
+            <input type="text" id="contactName" name="nome" placeholder="Seu nome completo" required autocomplete="name" />
+            <span class="form-error" id="errorNome"></span>
+          </div>
+          <div class="form-group">
+            <label for="contactEmail">E-mail *</label>
+            <input type="email" id="contactEmail" name="email" placeholder="seu@email.com" required autocomplete="email" />
+            <span class="form-error" id="errorEmail"></span>
+          </div>
+          <div class="form-group">
+            <label for="contactSubject">Assunto *</label>
+            <select id="contactSubject" name="assunto" required>
+              <option value="">Selecione um assunto</option>
+              <option value="projeto">Proposta de Projeto</option>
+              <option value="parceria">Parceria Institucional</option>
+              <option value="avaliacao">Avaliação Acadêmica</option>
+              <option value="colaboracao">Colaboração</option>
+              <option value="outro">Outro</option>
+            </select>
+            <span class="form-error" id="errorAssunto"></span>
+          </div>
+          <div class="form-group">
+            <label for="contactMessage">Mensagem *</label>
+            <textarea id="contactMessage" name="mensagem" placeholder="Descreva seu projeto ou dúvida em detalhes..." rows="5" required></textarea>
+            <span class="form-error" id="errorMensagem"></span>
+          </div>
+          <button type="submit" class="btn btn-primary btn-full" id="submitBtn">
+            <span id="submitText">Enviar Mensagem</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+          </button>
+          <div class="form-success" id="formSuccess">
+            <span>✅ Mensagem enviada com sucesso! Entraremos em contato em breve.</span>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== FOOTER ========== -->
+  <footer class="footer" role="contentinfo">
+    <div class="container">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <a href="#home" class="nav-logo footer-logo" aria-label="Arq & Urb">
+            <span class="logo-icon">⬡</span>
+            <span class="logo-text">Arq <span class="logo-amp">&</span> Urb</span>
+          </a>
+          <p>Projetando ideias, transformando espaços. Uma agência acadêmica multidisciplinar de excelência.</p>
+        </div>
+        <div class="footer-links-group">
+          <h5>Navegação</h5>
+          <ul>
+            <li><a href="#sobre">Quem Somos</a></li>
+            <li><a href="#metodologia">Metodologia</a></li>
+            <li><a href="#servicos">Serviços</a></li>
+            <li><a href="#cases">Cases</a></li>
+          </ul>
+        </div>
+        <div class="footer-links-group">
+          <h5>Portfólio</h5>
+          <ul>
+            <li><a href="#galeria">Galeria</a></li>
+            <li><a href="#equipe">Equipe</a></li>
+            <li><a href="#indicadores">Resultados</a></li>
+            <li><a href="#contato">Contato</a></li>
+          </ul>
+        </div>
+        <div class="footer-links-group">
+          <h5>Serviços</h5>
+          <ul>
+            <li><a href="#servicos">Arquitetura</a></li>
+            <li><a href="#servicos">Urbanismo</a></li>
+            <li><a href="#servicos">Design Gráfico</a></li>
+            <li><a href="#servicos">Branding</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2025 Arq & Urb — Agência Acadêmica. Todos os direitos reservados.</p>
+        <p>Desenvolvido com <span style="color:var(--green)">♥</span> pelos estudantes da agência Arq & Urb.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Back to top -->
+  <button class="back-to-top" id="backToTop" aria-label="Voltar ao topo" title="Voltar ao topo">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 15l-6-6-6 6"/></svg>
+  </button>
+
+  <script src="script.js"></script>
+</body>
+</html>
