@@ -748,13 +748,17 @@ input, textarea, select { font-family: var(--font); }
   background-size: cover;
   background-position: center;
   color: var(--white);
+  min-height: 320px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
 }
 .service-card::before {
   content: '';
   position: absolute;
   inset: 0;
   background: linear-gradient(180deg, rgba(15, 23, 42, 0.16), rgba(15, 23, 42, 0.82));
-  opacity: 0.9;
+  opacity: 1;
   transition: opacity var(--transition);
 }
 .service-card:hover::before { opacity: 0.75; }
@@ -769,7 +773,7 @@ input, textarea, select { font-family: var(--font); }
   transform-origin: left;
 }
 .service-card:hover {
-  transform: translateY(-8px);
+  transform: translateY(-6px);
   box-shadow: var(--shadow-lg);
   border-color: rgba(31, 58, 95, 0.2);
 }
@@ -787,38 +791,22 @@ input, textarea, select { font-family: var(--font); }
 #servAudiovisual { background-image: url('images/audiovisual.webp'); }
 
 .service-icon-wrap {
-  width: 70px;
-  height: 70px;
-  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
-  border-radius: var(--radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 24px;
-  transition: var(--transition);
-  box-shadow: 0 8px 24px rgba(31, 58, 95, 0.25);
-}
-.service-card:hover .service-icon-wrap {
-  background: linear-gradient(135deg, #152a45 0%, #1F3A5F 100%);
-  transform: scale(1.05) rotate(-5deg);
-  box-shadow: 0 12px 32px rgba(92, 138, 75, 0.35);
-}
-.service-icon { font-size: 2rem; }
-.service-image {
   display: none;
 }
+.service-icon { display: none; }
 .service-card h3 {
-  font-size: 1.15rem;
-  font-weight: 700;
+  font-size: 1.35rem;
+  font-weight: 800;
   color: var(--white);
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 [data-theme="dark"] .service-card h3 { color: var(--white); }
 .service-card p {
-  font-size: 0.88rem;
+  font-size: 0.92rem;
   color: rgba(255,255,255,0.92);
-  line-height: 1.7;
+  line-height: 1.8;
 }
+
 .service-line {
   width: 40px;
   height: 2px;
